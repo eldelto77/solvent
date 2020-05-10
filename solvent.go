@@ -25,7 +25,7 @@ type ToDoList struct {
 
 func NewToDoList(title string) (ToDoList, error) {
 	// TODO: validate input string
-	id, err := randomUuid()
+	id, err := randomUUID()
 	if err != nil {
 		return ToDoList{}, err
 	}
@@ -43,7 +43,7 @@ func NewToDoList(title string) (ToDoList, error) {
 func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
 	// TODO: validate input string
 
-	id, err := randomUuid()
+	id, err := randomUUID()
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -91,7 +91,7 @@ func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 	}
 	tdl.RemoveItem(item.ID)
 
-	newID, err := randomUuid()
+	newID, err := randomUUID()
 	if err != nil {
 		return newID, err
 	}
@@ -127,7 +127,7 @@ func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 	sort.Slice(items, func(i, j int) bool { return items[i].OrderValue < items[j].OrderValue })
 
 	orderValueMid := items[index].OrderValue
-	orderValueAdjacent := orderValueMid
+	var orderValueAdjacent float64
 	if orderValueMid < item.OrderValue {
 		// Moving item up
 		orderValueAdjacent = 0.0
@@ -153,10 +153,30 @@ func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 }
 
 func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
-	return ToDoList{}, nil
+	if tdl.ID != other.ID {
+		return ToDoList{}, newCannotBeMergedError(tdl.ID, other.ID)
+	}
+
+	mergedLiveSet, err := mergeToDoItemMaps(tdl.liveSet, other.liveSet)
+	if err != nil {
+		return ToDoList{}, err
+	}
+
+	mergedTombstoneSet, err := mergeToDoItemMaps(tdl.tombstoneSet, other.tombstoneSet)
+	if err != nil {
+		return ToDoList{}, err
+	}
+
+	mergedToDoList := ToDoList{
+		ID:           tdl.ID,
+		Title:        tdl.Title,
+		liveSet:      mergedLiveSet,
+		tombstoneSet: mergedTombstoneSet,
+	}
+	return mergedToDoList, nil
 }
 
-func randomUuid() (uuid.UUID, error) {
+func randomUUID() (uuid.UUID, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		err = &UnknownError{
@@ -183,7 +203,7 @@ func (tdl *ToDoList) liveView() ToDoItemMap {
 }
 
 func (tdl *ToDoList) nextOrderValue() float64 {
-	orderValue := 10.0
+	orderValue := 0.0
 	for _, item := range tdl.liveView() {
 		if item.OrderValue > orderValue {
 			orderValue = item.OrderValue
@@ -191,6 +211,41 @@ func (tdl *ToDoList) nextOrderValue() float64 {
 	}
 
 	return orderValue + 10
+}
+
+func mergeToDoItems(this, other ToDoItem) (ToDoItem, error) {
+	if this.ID != other.ID {
+		return this, newCannotBeMergedError(this.ID, other.ID)
+	}
+
+	if other.Checked {
+		this.Checked = true
+	}
+
+	if other.OrderValue < this.OrderValue {
+		this.OrderValue = other.OrderValue
+	}
+
+	return this, nil
+}
+
+func mergeToDoItemMaps(thisMap, otherMap ToDoItemMap) (ToDoItemMap, error) {
+	mergedMap := ToDoItemMap{}
+	for k, v := range thisMap {
+		mergedMap[k] = v
+	}
+	for k, otherItem := range otherMap {
+		thisItem, ok := thisMap[k]
+		if ok {
+			otherItem, err := mergeToDoItems(thisItem, otherItem)
+			if err != nil {
+				return ToDoItemMap{}, newCannotBeMergedError(thisItem.ID, otherItem.ID)
+			}
+		}
+		mergedMap[k] = otherItem
+	}
+
+	return mergedMap, nil
 }
 
 func clampIndex(index int, list []ToDoItem) int {
@@ -214,7 +269,7 @@ type NotFoundError struct {
 func newNotFoundError(id uuid.UUID) *NotFoundError {
 	return &NotFoundError{
 		ID:      id,
-		message: fmt.Sprintf("item with ID %v could not be found", id),
+		message: fmt.Sprintf("item with ID '%v' could not be found", id),
 	}
 }
 
@@ -232,8 +287,17 @@ func (e *InvalidTitleError) Error() string {
 }
 
 type CannotBeMergedError struct {
-	ID      uuid.UUID
+	thisID  uuid.UUID
+	otherID uuid.UUID
 	message string
+}
+
+func newCannotBeMergedError(thisID, otherID uuid.UUID) *CannotBeMergedError {
+	return &CannotBeMergedError{
+		thisID:  thisID,
+		otherID: otherID,
+		message: fmt.Sprintf("item with ID '%v' cannot be merged with item with ID '%v'", thisID, otherID),
+	}
 }
 
 func (e *CannotBeMergedError) Error() string {

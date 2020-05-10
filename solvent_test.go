@@ -14,6 +14,8 @@ const itemTitle0 = "item0"
 const itemTitle1 = "item1"
 const itemTitle2 = "item2"
 
+// TODO: Test failure cases
+
 func TestNewToDoList(t *testing.T) {
 	list, err := NewToDoList(listTitle0)
 
@@ -44,7 +46,7 @@ func TestRemoveItem(t *testing.T) {
 	_, err := list.GetItem(id)
 	expected := &NotFoundError{
 		ID:      id,
-		message: fmt.Sprintf("item with ID %v could not be found", id),
+		message: fmt.Sprintf("item with ID '%v' could not be found", id),
 	}
 	assertEquals(t, expected, err, "list.GetItem error")
 }
@@ -115,6 +117,33 @@ func TestMoveItem(t *testing.T) {
 	ids = itemIDs(orderedItems(&list))
 	expected = []uuid.UUID{id0, id1, id2}
 	assertEquals(t, expected, ids, "Third move item ordering")
+}
+
+func TestMerge(t *testing.T) {
+	list0, _ := NewToDoList(listTitle0)
+	_, _ = list0.AddItem(itemTitle0)
+	id1, _ := list0.AddItem(itemTitle1)
+
+	list1, _ := NewToDoList(listTitle0)
+	list1.ID = list0.ID
+	_, _ = list1.AddItem(itemTitle2)
+
+	item1, _ := list0.GetItem(id1)
+	item1.Checked = true
+	item1.OrderValue = 5.0
+	list1.liveSet[id1] = item1
+
+	mergedList, err := list0.Merge(&list1)
+	assertEquals(t, nil, err, "list0.Merge error")
+
+	// TODO: Handle equal sort order assigned from item creation
+	/*ids := itemIDs(orderedItems(&mergedList))
+	expected := []uuid.UUID{id1, id0, id2}
+	assertEquals(t, expected, ids, "Item ordering")*/
+
+	item1, _ = mergedList.GetItem(id1)
+	assertEquals(t, 5.0, item1.OrderValue, "item0.OrderValue")
+	assertEquals(t, true, item1.Checked, "item0.Checked")
 }
 
 func orderedItems(tdl *ToDoList) []ToDoItem {
