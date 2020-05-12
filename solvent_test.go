@@ -21,8 +21,8 @@ func TestNewToDoList(t *testing.T) {
 
 	assertEquals(t, nil, err, "NewToDoList error")
 	assertEquals(t, listTitle0, list.Title, "list.Title")
-	assertEquals(t, 0, len(list.liveSet), "list.liveSet length")
-	assertEquals(t, 0, len(list.tombstoneSet), "list.tombstoneSet length")
+	assertEquals(t, 0, len(list.LiveSet), "list.LiveSet length")
+	assertEquals(t, 0, len(list.TombstoneSet), "list.TombstoneSet length")
 }
 
 func TestAddItem(t *testing.T) {
@@ -131,7 +131,7 @@ func TestMerge(t *testing.T) {
 	item1, _ := list0.GetItem(id1)
 	item1.Checked = true
 	item1.OrderValue = 5.0
-	list1.liveSet[id1] = item1
+	list1.LiveSet[id1] = item1
 
 	mergedList, err := list0.Merge(&list1)
 	assertEquals(t, nil, err, "list0.Merge error")

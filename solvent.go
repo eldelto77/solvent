@@ -19,8 +19,8 @@ type ToDoItemMap map[uuid.UUID]ToDoItem
 type ToDoList struct {
 	ID           uuid.UUID
 	Title        string
-	liveSet      ToDoItemMap
-	tombstoneSet ToDoItemMap
+	LiveSet      ToDoItemMap
+	TombstoneSet ToDoItemMap
 }
 
 func NewToDoList(title string) (ToDoList, error) {
@@ -33,8 +33,8 @@ func NewToDoList(title string) (ToDoList, error) {
 	toDoList := ToDoList{
 		ID:           id,
 		Title:        title,
-		liveSet:      ToDoItemMap{},
-		tombstoneSet: ToDoItemMap{},
+		LiveSet:      ToDoItemMap{},
+		TombstoneSet: ToDoItemMap{},
 	}
 
 	return toDoList, nil
@@ -54,7 +54,7 @@ func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
 		Checked:    false,
 		OrderValue: tdl.nextOrderValue(),
 	}
-	tdl.liveSet[id] = item
+	tdl.LiveSet[id] = item
 
 	return id, nil
 }
@@ -70,7 +70,7 @@ func (tdl *ToDoList) GetItem(id uuid.UUID) (ToDoItem, error) {
 
 func (tdl *ToDoList) RemoveItem(id uuid.UUID) {
 	if item, ok := tdl.liveView()[id]; ok {
-		tdl.tombstoneSet[id] = item
+		tdl.TombstoneSet[id] = item
 	}
 }
 
@@ -78,7 +78,7 @@ func (tdl *ToDoList) CheckItem(id uuid.UUID) (uuid.UUID, error) {
 	item, err := tdl.GetItem(id)
 	if err == nil {
 		item.Checked = true
-		tdl.liveSet[id] = item
+		tdl.LiveSet[id] = item
 	}
 
 	return item.ID, err
@@ -101,7 +101,7 @@ func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 		Checked:    false,
 		OrderValue: item.OrderValue,
 	}
-	tdl.liveSet[newID] = newItem
+	tdl.LiveSet[newID] = newItem
 
 	return newID, nil
 }
@@ -147,7 +147,7 @@ func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 
 	newOrderValue := (orderValueMid + orderValueAdjacent) / 2
 	item.OrderValue = newOrderValue
-	tdl.liveSet[item.ID] = item
+	tdl.LiveSet[item.ID] = item
 
 	return nil
 }
@@ -157,12 +157,12 @@ func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
 		return ToDoList{}, newCannotBeMergedError(tdl.ID, other.ID)
 	}
 
-	mergedLiveSet, err := mergeToDoItemMaps(tdl.liveSet, other.liveSet)
+	mergedLiveSet, err := mergeToDoItemMaps(tdl.LiveSet, other.LiveSet)
 	if err != nil {
 		return ToDoList{}, err
 	}
 
-	mergedTombstoneSet, err := mergeToDoItemMaps(tdl.tombstoneSet, other.tombstoneSet)
+	mergedTombstoneSet, err := mergeToDoItemMaps(tdl.TombstoneSet, other.TombstoneSet)
 	if err != nil {
 		return ToDoList{}, err
 	}
@@ -170,8 +170,8 @@ func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
 	mergedToDoList := ToDoList{
 		ID:           tdl.ID,
 		Title:        tdl.Title,
-		liveSet:      mergedLiveSet,
-		tombstoneSet: mergedTombstoneSet,
+		LiveSet:      mergedLiveSet,
+		TombstoneSet: mergedTombstoneSet,
 	}
 	return mergedToDoList, nil
 }
@@ -192,8 +192,8 @@ func (tdl *ToDoList) liveView() ToDoItemMap {
 	// TODO: Pass expected length?
 	liveView := ToDoItemMap{}
 
-	for key, value := range tdl.liveSet {
-		_, deleted := tdl.tombstoneSet[key]
+	for key, value := range tdl.LiveSet {
+		_, deleted := tdl.TombstoneSet[key]
 		if !deleted {
 			liveView[key] = value
 		}

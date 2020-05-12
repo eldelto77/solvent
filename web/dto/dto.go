@@ -12,13 +12,11 @@ type ToDoItemDto struct {
 	OrderValue float64   `json:"orderValue"`
 }
 
-type ToDoItemDtoMap map[uuid.UUID]ToDoItemDto
-
 type ToDoListDto struct {
 	ID           uuid.UUID      `json:"id"`
 	Title        string         `json:"title"`
-	LiveSet      ToDoItemDtoMap `json:"liveSet"`
-	TombstoneSet ToDoItemDtoMap `json:"tombstoneSet"`
+	LiveSet      []ToDoItemDto `json:"liveSet"`
+	TombstoneSet []ToDoItemDto `json:"tombstoneSet"`
 }
 
 func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
@@ -39,19 +37,22 @@ func ToDoItemFromDto(item ToDoItemDto) solvent.ToDoItem {
 	}
 }
 
-func toDoItemMapToDto(items solvent.ToDoItemMap) ToDoItemDtoMap {
-	itemsDto := ToDoItemDtoMap{}
-	for k, v := range items {
-		itemsDto[k] = ToDoItemToDto(v)
+func toDoItemMapToDto(items solvent.ToDoItemMap) []ToDoItemDto {
+	itemsDto := make([]ToDoItemDto, len(items))
+
+	i := 0
+	for _, v := range items {
+		itemsDto[i] = ToDoItemToDto(v)
+		i++
 	}
 
 	return itemsDto
 }
 
-func toDoItemMapFromDto(itemsDto ToDoItemDtoMap) solvent.ToDoItemMap {
+func toDoItemMapFromDto(itemsDto []ToDoItemDto) solvent.ToDoItemMap {
 	items := solvent.ToDoItemMap{}
-	for k, v := range itemsDto {
-		items[k] = ToDoItemFromDto(v)
+	for _, v := range itemsDto {
+		items[v.ID] = ToDoItemFromDto(v)
 	}
 
 	return items
