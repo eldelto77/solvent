@@ -9,22 +9,22 @@ import (
 
 type ToDoListStore  map[uuid.UUID]solvent.ToDoList
 
-type Repository struct {
+type InMemoryRepository struct {
 	store ToDoListStore
 }
 
-func NewRepository() Repository {
-	return Repository{
+func NewInMemoryRepository() InMemoryRepository {
+	return InMemoryRepository{
 		store: ToDoListStore{},
 	}
 }
 
-func (r *Repository) Store(list *solvent.ToDoList) error {
+func (r *InMemoryRepository) Store(list *solvent.ToDoList) error {
 	r.store[list.ID] = *list
 	return nil
 }
 
-func (r *Repository) Update(list *solvent.ToDoList) error {
+func (r *InMemoryRepository) Update(list *solvent.ToDoList) error {
 	_, ok := r.store[list.ID]
 	if !ok {
 		return fmt.Errorf("ToDoList with ID '%v' could not be found", list.ID)
@@ -34,7 +34,7 @@ func (r *Repository) Update(list *solvent.ToDoList) error {
 	return nil
 }
 
-func (r *Repository) Fetch(id uuid.UUID) (*solvent.ToDoList, error) {
+func (r *InMemoryRepository) Fetch(id uuid.UUID) (*solvent.ToDoList, error) {
 	list, ok := r.store[id]
 	if !ok {
 		return nil, fmt.Errorf("ToDoList with ID '%v' could not be found", id)

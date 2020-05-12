@@ -15,7 +15,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var repository = persistence.NewRepository()
+var repository = persistence.NewInMemoryRepository()
 var service = serv.NewService(&repository)
 
 func main() {
