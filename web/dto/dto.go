@@ -13,8 +13,8 @@ type ToDoItemDto struct {
 }
 
 type ToDoListDto struct {
-	ID           uuid.UUID      `json:"id"`
-	Title        string         `json:"title"`
+	ID           uuid.UUID     `json:"id"`
+	Title        string        `json:"title"`
 	LiveSet      []ToDoItemDto `json:"liveSet"`
 	TombstoneSet []ToDoItemDto `json:"tombstoneSet"`
 }

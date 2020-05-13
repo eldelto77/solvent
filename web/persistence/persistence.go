@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type ToDoListStore  map[uuid.UUID]solvent.ToDoList
+type ToDoListStore map[uuid.UUID]solvent.ToDoList
 
 type InMemoryRepository struct {
 	store ToDoListStore

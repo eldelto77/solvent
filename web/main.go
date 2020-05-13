@@ -15,19 +15,30 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var repository = persistence.NewInMemoryRepository()
-var service = serv.NewService(&repository)
+type Controller struct {
+	Handler http.Handler
+}
 
-func main() {
-	port := 8080
+func wireMainController() *Controller {
 	r := mux.NewRouter()
-
 	r.Handle("/health", baseMiddleWare(fetchHealth)).Methods("GET")
 	r.Handle("/api/to-do-list/{id}", baseMiddleWare(fetchToDoList)).Methods("GET")
 	r.Handle("/api/to-do-list", baseMiddleWare(createToDoList)).Methods("POST")
 	r.Handle("/api/to-do-list", baseMiddleWare(updateToDoList)).Methods("PUT")
 
-	http.Handle("/", r)
+	return &Controller{
+		Handler: r,
+	}
+}
+
+var repository = persistence.NewInMemoryRepository()
+var service = serv.NewService(&repository)
+var MainController = wireMainController()
+
+func main() {
+	port := 8080
+
+	http.Handle("/", MainController.Handler)
 	log.Printf("Listening on localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
