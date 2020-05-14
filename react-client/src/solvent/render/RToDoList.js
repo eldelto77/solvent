@@ -5,39 +5,58 @@ class RToDoList extends React.Component {
   constructor(props) {
     super(props);
 
-    this.checkItem = this.checkItem.bind(this);
+    this.state = {
+      newItemTitle: ""
+    }
   }
 
-  checkItem(item) {
+  checkItem = item => {
     return this.props.checkItem(item);
   }
 
-  render() {
-    return(
-    <div className="ToDoList">
-      <h1>{this.props.toDoList.title}</h1>
+  setNewItemTitle = event => {
+    this.setState({ newItemTitle: event.target.value });
+  }
 
-      {this.props.toDoList.items.map(item => {
-        return (
-        <RToDoItem key={item.id} item={item} onCheck={() => this.checkItem(item)} />
-        );
-      })}
-    </div>
+  addItem = event => {
+    this.props.addItem(this.state.newItemTitle);
+    this.setState({ newItemTitle: "" });
+    event.preventDefault();
+  }
+
+  render() {
+    return (
+      <div className="ToDoList">
+        <h1>{this.props.toDoList.title}</h1>
+
+        <RToDoItems items={this.props.toDoList.items} onCheck={this.checkItem} />
+
+        <AddItemBar value={this.state.newItemTitle} onChange={this.setNewItemTitle} onSubmit={this.addItem} />
+      </div>
     );
   }
 }
 
-  function RToDoItem(props) {
-    return (
-      <div>
-        <input 
-        type="checkbox" 
-        checked={props.item.checked} 
-        onChange={props.onCheck}
-        />
-        {props.item.title}
-      </div>
-    );
-  }
+function RToDoItems(props) {
+  return (
+    props.items.sort((a, b) => a.orderValue - b.orderValue).map(item => {
+      return (
+        <div key={item.id}>
+          <input type="checkbox" checked={item.checked} onChange={() => props.onCheck(item)} />
+          {item.title}
+        </div>
+      );
+    })
+  );
+}
+
+function AddItemBar(props) {
+  return (
+    <form onSubmit={props.onSubmit}>
+      <input type="text" value={props.value} onChange={props.onChange} />
+      <input type="submit" value="Add" />
+    </form>
+  );
+}
 
 export default RToDoList;

@@ -16,19 +16,23 @@ class App extends React.Component {
   }
 
   checkItem = item => {
-      if (item.checked) {
-        this.state.toDoList.uncheckItem(item.id);
-        return this.setState({toDoList: this.state.toDoList});
-      } else {
-        this.state.toDoList.checkItem(item.id);
-        return this.setState({toDoList: this.state.toDoList});
-      }
+    if (item.checked) {
+      this.state.toDoList.uncheckItem(item.id);
+    } else {
+      this.state.toDoList.checkItem(item.id);
     }
+    return this.setState({ toDoList: this.state.toDoList });
+  }
+
+  addItem = title => {
+    this.state.toDoList.addItem(title);
+    return this.setState({ toDoList: this.state.toDoList });
+  }
 
   render() {
     return (
       <div className="App">
-        <RToDoList toDoList={this.state.toDoList} checkItem={this.checkItem} />
+        <RToDoList toDoList={this.state.toDoList} checkItem={this.checkItem} addItem={this.addItem} />
       </div>
     );
   }
