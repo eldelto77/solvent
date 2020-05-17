@@ -35,20 +35,32 @@ class App extends React.Component {
   }
 
   moveItem = (id, targetIndex) => {
-    console.log(targetIndex);
     this.state.toDoList.moveItem(id, targetIndex);
+    return this.setState({ toDoList: this.state.toDoList });
+  }
+
+  renameItem = (item, title) => {
+    this.state.toDoList.renameItem(item.id, title);
     return this.setState({ toDoList: this.state.toDoList });
   }
 
   render() {
     return (
       <div className="App">
+        <header>
+          <div className="Header">
+            <span className="HeaderSpacer"></span>
+            <h1 className="HeaderTitle">Solvent</h1>
+            <button className="HeaderMenu">_</button>
+          </div>
+        </header>
         <RToDoList
           toDoList={this.state.toDoList}
           checkItem={this.checkItem}
           addItem={this.addItem}
           removeItem={this.removeItem}
           moveItem={this.moveItem}
+          renameItem={this.renameItem}
         />
       </div>
     );

@@ -44,24 +44,31 @@ class RToDoList extends React.Component {
     this.props.moveItem(draggableId, destination.index);
   }
 
+  renameItem = (item, event) => {
+    return this.props.renameItem(item, event.target.value);
+  }
+
   render() {
     return (
       <div className="ToDoList">
-        <h1>{this.props.toDoList.title}</h1>
+        <h1 className="ToDoListTitle">{this.props.toDoList.title}</h1>
 
-        <RToDoItems
-          items={this.props.toDoList.items}
-          onCheck={this.checkItem}
-          onRemove={this.removeItem}
-          onDragEnd={this.moveItem}
-        />
+        <div className="ToDoListBody">
+          <RToDoItems
+            items={this.props.toDoList.items}
+            onCheck={this.checkItem}
+            onRemove={this.removeItem}
+            onDragEnd={this.moveItem}
+            onRename={this.renameItem}
+          />
 
-        <AddItemBar
-          value={this.state.newItemTitle}
-          onChange={this.setNewItemTitle}
-          onSubmit={this.addItem}
-          disabled={this.state.newItemTitle.trim().length <= 0}
-        />
+          <AddItemBar
+            value={this.state.newItemTitle}
+            onChange={this.setNewItemTitle}
+            onSubmit={this.addItem}
+            disabled={this.state.newItemTitle.trim().length <= 0}
+          />
+        </div>
       </div>
     );
   }
@@ -81,6 +88,7 @@ function RToDoItems(props) {
                   index={index}
                   onCheck={props.onCheck}
                   onRemove={props.onRemove}
+                  onRename={props.onRename}
                 />
               ))}
 
@@ -92,6 +100,8 @@ function RToDoItems(props) {
   );
 }
 
+// Move to own component and keep newTitle in state.
+// Apply renaming on focus loss
 function RToDoItem(props) {
   return (
     <Draggable draggableId={props.item.id} index={props.index}>
@@ -103,12 +113,20 @@ function RToDoItem(props) {
           {...provided.dragHandleProps}
         >
           <input
+            className="ToDoItemCheckbox"
             type="checkbox"
             checked={props.item.checked}
             onChange={() => props.onCheck(props.item)}
           />
-          {props.item.title}
-          <button onClick={() => props.onRemove(props.item)}>x</button>
+          <input
+            className="ToDoItemTitle"
+            type="text"
+            value={props.item.title}
+            onChange={event => props.onRename(props.item, event)}
+          />
+          <button
+            className="ToDoItemDelete"
+            onClick={() => props.onRemove(props.item)}>x</button>
         </div>
       )}
     </Draggable>
@@ -117,9 +135,16 @@ function RToDoItem(props) {
 
 function AddItemBar(props) {
   return (
-    <form onSubmit={props.onSubmit}>
-      <input type="text" value={props.value} onChange={props.onChange} />
-      <input type="submit" value="Add" disabled={props.disabled} />
+    <form className="AddItemBar" onSubmit={props.onSubmit}>
+      <span className="AddItemBarLogo">+</span>
+      <input
+        className="AddItemBarTitle"
+        type="text"
+        value={props.value}
+        placeholder="New item"
+        onChange={props.onChange}
+      />
+      <input className="AddItemBarButton" type="submit" value="Add" disabled={props.disabled} />
     </form>
   );
 }

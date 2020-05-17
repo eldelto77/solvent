@@ -11,3 +11,115 @@
   height: 2.5em;
   vertical-align: middle;
 }
+
+/*
+  Fonts
+  Pattaya
+  Merriweather Sans
+  Cabin
+*/
+
+.ToDoList {
+  
+}
+
+.ToDoListTitle {
+  margin-top: 0;
+}
+
+.ToDoListBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ToDoItems {
+  width: 100%;
+}
+
+.ToDoItem {
+  height: 3em;
+  /*padding-left: 5%;*/
+  padding: 0 1em;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ToDoItemCheckbox {
+  height: 1em;
+  width: 1em;
+  margin: 0;
+}
+
+.ToDoItemTitle {
+  margin: 0 0.5em;
+  padding: 0 0.5em;
+  flex-grow: 1;
+  border: none;
+  background: none;
+}
+
+.ToDoItemDelete {
+  height: 3em;
+  width: 3em;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.AddItemBar {
+  height: 3em;
+  width: 100%;
+  padding: 0 1em;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.AddItemBarLogo {
+  height: 1em;
+  width: 1em;
+  text-align: center;
+}
+
+.AddItemBarTitle {
+  margin: 0 0.5em;
+  padding: 0 0.5em;
+  flex-grow: 1;
+  border: none;
+  background: none;
+}
+
+.Header {
+  height: 3em;
+  padding: 0 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.HeaderSpacer {
+  height: 3em;
+  width: 3em;
+}
+
+.HeaderTitle {
+  font-size: 1.5em;
+  color: lightskyblue;
+  text-align: center;
+  flex-grow: 1;
+  
+}
+
+.HeaderMenu {
+  height: 3em;
+  width: 3em;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: lightsalmon;
+}

@@ -29,6 +29,10 @@ class ToDoList {
     return id;
   }
 
+  getItem(id) {
+    return this.liveView().get(id);
+  }
+
   removeItem(id) {
     const items = this.liveView();
     if (items.has(id)) {
@@ -38,37 +42,27 @@ class ToDoList {
   }
 
   checkItem(id) {
-    const items = this.liveView();
-    if (items.has(id)) {
-      const item = items.get(id);
+      const item = this.getItem(id);
       item.checked = true
+
       return id;
-    }
   }
 
   uncheckItem(id) {
-    const items = this.liveView();
-    if (items.has(id)) {
-      const item = items.get(id);
+      const item = this.getItem(id);
       this.tombstoneSet.set(id, item);
       const newId = uuid();
       const newItem = new ToDoItem(newId, item.title, false, item.orderValue);
       this.liveSet.set(newId, newItem)
 
       return newId;
-    }
   }
 
   moveItem(id, targetIndex) {
-    const liveView = this.liveView();
-    if (liveView.has(id)) {
-      const item = liveView.get(id);
+      const item = this.getItem(id);
       const items = this.items.sort((a, b) => a.orderValue - b.orderValue);
+
       const orderValueMid = items[targetIndex].orderValue;
-
-      console.log("orderValueMid: " + orderValueMid);
-      console.log("item.orderValue: " + item.orderValue);
-
       let orderValueAdjacent;
       if (orderValueMid < item.orderValue) {
         // Movint item up
@@ -89,13 +83,21 @@ class ToDoList {
       }
 
       const newOrderValue = (orderValueMid + orderValueAdjacent) / 2.0;
-
-      console.log("items: " + items);
-      console.log("newOrderValue: " + newOrderValue);
-
       item.orderValue = newOrderValue;
       this.liveSet.set(item.id, item);
-    }
+
+      return item.id;
+  }
+
+  renameItem(id, title) {
+    const oldItem = this.getItem(id);
+    this.removeItem(oldItem.id);
+    const newId = this.addItem(title);
+    const newItem = this.getItem(newId);
+    newItem.orderValue = oldItem.orderValue;
+    this.liveSet.set(newItem.id, newItem);
+
+    return newId;
   }
 
   liveView() {
