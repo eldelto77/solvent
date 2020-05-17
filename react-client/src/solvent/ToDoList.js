@@ -59,6 +59,45 @@ class ToDoList {
     }
   }
 
+  moveItem(id, targetIndex) {
+    const liveView = this.liveView();
+    if (liveView.has(id)) {
+      const item = liveView.get(id);
+      const items = this.items.sort((a, b) => a.orderValue - b.orderValue);
+      const orderValueMid = items[targetIndex].orderValue;
+
+      console.log("orderValueMid: " + orderValueMid);
+      console.log("item.orderValue: " + item.orderValue);
+
+      let orderValueAdjacent;
+      if (orderValueMid < item.orderValue) {
+        // Movint item up
+        if ((targetIndex - 1) >= 0) {
+          orderValueAdjacent = items[targetIndex - 1].orderValue;
+        } else {
+          orderValueAdjacent = 0.0;
+        }
+      } else if (orderValueMid > item.orderValue) {
+        // Movint item down
+        if ((targetIndex + 1) < items.length) {
+          orderValueAdjacent = items[targetIndex + 1].orderValue;
+        } else {
+          orderValueAdjacent = this.nextOrderValue();
+        }
+      } else {
+        return;
+      }
+
+      const newOrderValue = (orderValueMid + orderValueAdjacent) / 2.0;
+
+      console.log("items: " + items);
+      console.log("newOrderValue: " + newOrderValue);
+
+      item.orderValue = newOrderValue;
+      this.liveSet.set(item.id, item);
+    }
+  }
+
   liveView() {
     const liveView = new Map();
     this.liveSet.forEach((item, id) => {

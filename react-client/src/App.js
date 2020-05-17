@@ -29,10 +29,27 @@ class App extends React.Component {
     return this.setState({ toDoList: this.state.toDoList });
   }
 
+  removeItem = item => {
+    this.state.toDoList.removeItem(item.id);
+    return this.setState({ toDoList: this.state.toDoList });
+  }
+
+  moveItem = (id, targetIndex) => {
+    console.log(targetIndex);
+    this.state.toDoList.moveItem(id, targetIndex);
+    return this.setState({ toDoList: this.state.toDoList });
+  }
+
   render() {
     return (
       <div className="App">
-        <RToDoList toDoList={this.state.toDoList} checkItem={this.checkItem} addItem={this.addItem} />
+        <RToDoList
+          toDoList={this.state.toDoList}
+          checkItem={this.checkItem}
+          addItem={this.addItem}
+          removeItem={this.removeItem}
+          moveItem={this.moveItem}
+        />
       </div>
     );
   }

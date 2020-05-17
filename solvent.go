@@ -130,15 +130,17 @@ func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 	var orderValueAdjacent float64
 	if orderValueMid < item.OrderValue {
 		// Moving item up
-		orderValueAdjacent = 0.0
 		if (index - 1) >= 0 {
 			orderValueAdjacent = items[index-1].OrderValue
+		} else {
+			orderValueAdjacent = 0.0
 		}
 	} else if orderValueMid > item.OrderValue {
 		// Moving item down
-		orderValueAdjacent = tdl.nextOrderValue()
 		if (index + 1) < len(items) {
 			orderValueAdjacent = items[index+1].OrderValue
+		} else {
+			orderValueAdjacent = tdl.nextOrderValue()
 		}
 	} else {
 		// Already on correct position
