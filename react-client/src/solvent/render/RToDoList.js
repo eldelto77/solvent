@@ -1,7 +1,9 @@
 import React from 'react'
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
-class RToDoList extends React.Component {
+import AddItemBar from './AddItemBar'
+import RToDoItems from './RToDoItems'
+
+export default class RToDoList extends React.Component {
 
   constructor(props) {
     super(props);
@@ -11,18 +13,10 @@ class RToDoList extends React.Component {
     }
   }
 
-  checkItem = item => {
-    return this.props.checkItem(item);
-  }
-
   addItem = event => {
     this.props.addItem(this.state.newItemTitle);
     this.setState({ newItemTitle: "" });
     event.preventDefault();
-  }
-
-  removeItem = item => {
-    return this.props.removeItem(item);
   }
 
   setNewItemTitle = event => {
@@ -44,10 +38,6 @@ class RToDoList extends React.Component {
     this.props.moveItem(draggableId, destination.index);
   }
 
-  renameItem = (item, event) => {
-    return this.props.renameItem(item, event.target.value);
-  }
-
   render() {
     return (
       <div className="ToDoList">
@@ -56,10 +46,10 @@ class RToDoList extends React.Component {
         <div className="ToDoListBody">
           <RToDoItems
             items={this.props.toDoList.items}
-            onCheck={this.checkItem}
-            onRemove={this.removeItem}
+            onCheck={this.props.checkItem}
+            onRemove={this.props.removeItem}
             onDragEnd={this.moveItem}
-            onRename={this.renameItem}
+            onRename={this.props.renameItem}
           />
 
           <AddItemBar
@@ -73,80 +63,3 @@ class RToDoList extends React.Component {
     );
   }
 }
-
-function RToDoItems(props) {
-  return (
-    <DragDropContext onDragEnd={props.onDragEnd}>
-      <Droppable droppableId="ToDoItemsDroppable">
-        {provided => (
-          <div className="ToDoItems" {...provided.droppableProps} ref={provided.innerRef}>
-            {props.items.sort((a, b) => a.orderValue - b.orderValue)
-              .map((item, index) => (
-                <RToDoItem
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  onCheck={props.onCheck}
-                  onRemove={props.onRemove}
-                  onRename={props.onRename}
-                />
-              ))}
-
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    </DragDropContext>
-  );
-}
-
-// Move to own component and keep newTitle in state.
-// Apply renaming on focus loss
-function RToDoItem(props) {
-  return (
-    <Draggable draggableId={props.item.id} index={props.index}>
-      {provided => (
-        <div
-          className="ToDoItem"
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-        >
-          <input
-            className="ToDoItemCheckbox"
-            type="checkbox"
-            checked={props.item.checked}
-            onChange={() => props.onCheck(props.item)}
-          />
-          <input
-            className="ToDoItemTitle"
-            type="text"
-            value={props.item.title}
-            onChange={event => props.onRename(props.item, event)}
-          />
-          <button
-            className="ToDoItemDelete"
-            onClick={() => props.onRemove(props.item)}>x</button>
-        </div>
-      )}
-    </Draggable>
-  );
-}
-
-function AddItemBar(props) {
-  return (
-    <form className="AddItemBar" onSubmit={props.onSubmit}>
-      <span className="AddItemBarLogo">+</span>
-      <input
-        className="AddItemBarTitle"
-        type="text"
-        value={props.value}
-        placeholder="New item"
-        onChange={props.onChange}
-      />
-      <input className="AddItemBarButton" type="submit" value="Add" disabled={props.disabled} />
-    </form>
-  );
-}
-
-export default RToDoList;
