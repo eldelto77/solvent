@@ -18,6 +18,7 @@ type ToDoListDto struct {
 	Title        string        `json:"title"`
 	LiveSet      []ToDoItemDto `json:"liveSet"`
 	TombstoneSet []ToDoItemDto `json:"tombstoneSet"`
+	UpdatedAt    int64
 }
 
 func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
@@ -26,7 +27,7 @@ func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
 		Title:      item.Title,
 		Checked:    item.Checked,
 		OrderValue: item.OrderValue,
-		UpdatedAt: item.UpdatedAt,
+		UpdatedAt:  item.UpdatedAt,
 	}
 }
 
@@ -36,7 +37,7 @@ func ToDoItemFromDto(item ToDoItemDto) solvent.ToDoItem {
 		Title:      item.Title,
 		Checked:    item.Checked,
 		OrderValue: item.OrderValue,
-		UpdatedAt: item.UpdatedAt,
+		UpdatedAt:  item.UpdatedAt,
 	}
 }
 
@@ -67,6 +68,7 @@ func ToDoListToDto(list *solvent.ToDoList) *ToDoListDto {
 		Title:        list.Title,
 		LiveSet:      toDoItemMapToDto(list.LiveSet),
 		TombstoneSet: toDoItemMapToDto(list.TombstoneSet),
+		UpdatedAt:    list.UpdatedAt,
 	}
 }
 
@@ -76,5 +78,6 @@ func ToDoListFromDto(list *ToDoListDto) *solvent.ToDoList {
 		Title:        list.Title,
 		LiveSet:      toDoItemMapFromDto(list.LiveSet),
 		TombstoneSet: toDoItemMapFromDto(list.TombstoneSet),
+		UpdatedAt:    list.UpdatedAt,
 	}
 }

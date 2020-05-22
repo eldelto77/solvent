@@ -13,7 +13,7 @@ type ToDoItem struct {
 	Title      string
 	Checked    bool
 	OrderValue float64
-	UpdatedAt int64
+	UpdatedAt  int64
 }
 
 type ToDoItemMap map[uuid.UUID]ToDoItem
@@ -23,6 +23,7 @@ type ToDoList struct {
 	Title        string
 	LiveSet      ToDoItemMap
 	TombstoneSet ToDoItemMap
+	UpdatedAt    int64
 }
 
 func NewToDoList(title string) (ToDoList, error) {
@@ -37,9 +38,18 @@ func NewToDoList(title string) (ToDoList, error) {
 		Title:        title,
 		LiveSet:      ToDoItemMap{},
 		TombstoneSet: ToDoItemMap{},
+		UpdatedAt:    time.Now().Local().UnixNano(),
 	}
 
 	return toDoList, nil
+}
+
+// TODO: Use types for ToDoListID and ToDoItemID
+func (tdl *ToDoList) Rename(title string) (uuid.UUID, error) {
+	tdl.Title = title
+	tdl.UpdatedAt = time.Now().UnixNano()
+
+	return tdl.ID, nil
 }
 
 func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
@@ -55,7 +65,7 @@ func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
 		Title:      title,
 		Checked:    false,
 		OrderValue: tdl.nextOrderValue(),
-		UpdatedAt: time.Now().UnixNano(),
+		UpdatedAt:  time.Now().UnixNano(),
 	}
 	tdl.LiveSet[id] = item
 
@@ -103,7 +113,7 @@ func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 		Title:      item.Title,
 		Checked:    false,
 		OrderValue: item.OrderValue,
-		UpdatedAt: item.UpdatedAt,
+		UpdatedAt:  item.UpdatedAt,
 	}
 	tdl.LiveSet[newID] = newItem
 
@@ -163,6 +173,16 @@ func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
 		return ToDoList{}, newCannotBeMergedError(tdl.ID, other.ID)
 	}
 
+	var updatedAt int64
+	var title string
+	if other.UpdatedAt > tdl.UpdatedAt {
+		updatedAt = other.UpdatedAt
+		title = other.Title
+	} else {
+		updatedAt = tdl.UpdatedAt
+		title = tdl.Title
+	}
+
 	mergedLiveSet, err := mergeToDoItemMaps(tdl.LiveSet, other.LiveSet)
 	if err != nil {
 		return ToDoList{}, err
@@ -175,9 +195,10 @@ func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
 
 	mergedToDoList := ToDoList{
 		ID:           tdl.ID,
-		Title:        tdl.Title,
+		Title:        title,
 		LiveSet:      mergedLiveSet,
 		TombstoneSet: mergedTombstoneSet,
+		UpdatedAt:    updatedAt,
 	}
 	return mergedToDoList, nil
 }

@@ -10,6 +10,7 @@ import (
 )
 
 const listTitle0 = "list0"
+const listTitle1 = "list1"
 
 const itemTitle0 = "item0"
 const itemTitle1 = "item1"
@@ -24,6 +25,17 @@ func TestNewToDoList(t *testing.T) {
 	AssertEquals(t, listTitle0, list.Title, "list.Title")
 	AssertEquals(t, 0, len(list.LiveSet), "list.LiveSet length")
 	AssertEquals(t, 0, len(list.TombstoneSet), "list.TombstoneSet length")
+}
+
+func TestRename(t *testing.T) {
+	list, _ := NewToDoList(listTitle0)
+	oldTs := list.UpdatedAt
+
+	id, err := list.Rename(listTitle1)
+	AssertEquals(t, nil, err, "list.Rename error")
+	AssertEquals(t, listTitle1, list.Title, "title")
+	AssertEquals(t, list.ID, id, "id")
+	AssertEquals(t, true, list.UpdatedAt > oldTs, "UpdatedAt")
 }
 
 func TestAddItem(t *testing.T) {
@@ -125,7 +137,7 @@ func TestMerge(t *testing.T) {
 	_, _ = list0.AddItem(itemTitle0)
 	id1, _ := list0.AddItem(itemTitle1)
 
-	list1, _ := NewToDoList(listTitle0)
+	list1, _ := NewToDoList(listTitle1)
 	list1.ID = list0.ID
 	_, _ = list1.AddItem(itemTitle2)
 
@@ -136,6 +148,8 @@ func TestMerge(t *testing.T) {
 
 	mergedList, err := list0.Merge(&list1)
 	AssertEquals(t, nil, err, "list0.Merge error")
+	AssertEquals(t, listTitle1, mergedList.Title, "mergedList.Title")
+	AssertEquals(t, list1.UpdatedAt, mergedList.UpdatedAt, "mergedList.UpdatedAt")
 
 	// TODO: Handle equal sort order assigned from item creation
 	/*ids := itemIDs(orderedItems(&mergedList))
