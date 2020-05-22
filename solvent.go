@@ -3,6 +3,7 @@ package solvent
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -12,6 +13,7 @@ type ToDoItem struct {
 	Title      string
 	Checked    bool
 	OrderValue float64
+	UpdatedAt int64
 }
 
 type ToDoItemMap map[uuid.UUID]ToDoItem
@@ -53,6 +55,7 @@ func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
 		Title:      title,
 		Checked:    false,
 		OrderValue: tdl.nextOrderValue(),
+		UpdatedAt: time.Now().UnixNano(),
 	}
 	tdl.LiveSet[id] = item
 
@@ -100,6 +103,7 @@ func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 		Title:      item.Title,
 		Checked:    false,
 		OrderValue: item.OrderValue,
+		UpdatedAt: item.UpdatedAt,
 	}
 	tdl.LiveSet[newID] = newItem
 
@@ -224,7 +228,7 @@ func mergeToDoItems(this, other ToDoItem) (ToDoItem, error) {
 		this.Checked = true
 	}
 
-	if other.OrderValue < this.OrderValue {
+	if other.UpdatedAt > this.UpdatedAt {
 		this.OrderValue = other.OrderValue
 	}
 

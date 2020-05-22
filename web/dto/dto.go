@@ -10,6 +10,7 @@ type ToDoItemDto struct {
 	Title      string    `json:"title"`
 	Checked    bool      `json:"checked"`
 	OrderValue float64   `json:"orderValue"`
+	UpdatedAt  int64     `json:"updatedAt"`
 }
 
 type ToDoListDto struct {
@@ -25,6 +26,7 @@ func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
 		Title:      item.Title,
 		Checked:    item.Checked,
 		OrderValue: item.OrderValue,
+		UpdatedAt: item.UpdatedAt,
 	}
 }
 
@@ -34,6 +36,7 @@ func ToDoItemFromDto(item ToDoItemDto) solvent.ToDoItem {
 		Title:      item.Title,
 		Checked:    item.Checked,
 		OrderValue: item.OrderValue,
+		UpdatedAt: item.UpdatedAt,
 	}
 }
 
