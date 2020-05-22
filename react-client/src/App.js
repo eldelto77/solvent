@@ -1,6 +1,9 @@
 import React from 'react';
+
 import './App.css';
-import RToDoList from './solvent/render/RToDoList'
+import DetailView from './solvent/render/DetailView'
+import ListView from './solvent/render/ListView'
+
 import ToDoList from './solvent/ToDoList'
 
 class App extends React.Component {
@@ -8,63 +11,101 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      toDoList: ToDoList.new("List0")
-    }
+    const toDoList0 = ToDoList.new("List0");
+    toDoList0.addItem("Item0");
+    toDoList0.addItem("Item1");
+    toDoList0.addItem("Item2");
 
-    this.state.toDoList.addItem("Item0")
+    const toDoList1 = ToDoList.new("List1");
+    toDoList1.addItem("Item3");
+    toDoList1.addItem("Item4");
+    toDoList1.addItem("Item5");
+
+    this.state = {
+      toDoLists: [toDoList0, toDoList1],
+      activeToDoList: toDoList0,
+      isListViewActive: true
+    }
+  }
+
+  selectList = list => {
+    return this.setState({
+      activeToDoList: list,
+      isListViewActive: false
+    });
+  }
+
+  addList = () => {
+    const newList = ToDoList.new("");
+    this.state.toDoLists.push(newList);
+    this.setState({
+      activeToDoList: newList,
+      toDoLists: this.state.toDoLists,
+      isListViewActive: false
+    });
+  }
+
+  activateListView = () => {
+    this.setState({ isListViewActive: true });
+  }
+
+  renameList = title => {
+    this.state.activeToDoList.rename(title);
+    this.setState({ activeToDoList: this.state.activeToDoList });
   }
 
   checkItem = item => {
     if (item.checked) {
-      this.state.toDoList.uncheckItem(item.id);
+      this.state.activeToDoList.uncheckItem(item.id);
     } else {
-      this.state.toDoList.checkItem(item.id);
+      this.state.activeToDoList.checkItem(item.id);
     }
-    return this.setState({ toDoList: this.state.toDoList });
+    this.setState({ activeToDoList: this.state.activeToDoList });
   }
 
   addItem = title => {
-    this.state.toDoList.addItem(title);
-    return this.setState({ toDoList: this.state.toDoList });
+    this.state.activeToDoList.addItem(title);
+    this.setState({ activeToDoList: this.state.activeToDoList });
   }
 
   removeItem = item => {
-    this.state.toDoList.removeItem(item.id);
-    return this.setState({ toDoList: this.state.toDoList });
+    this.state.activeToDoList.removeItem(item.id);
+    this.setState({ activeToDoList: this.state.activeToDoList });
   }
 
   moveItem = (id, targetIndex) => {
-    this.state.toDoList.moveItem(id, targetIndex);
-    return this.setState({ toDoList: this.state.toDoList });
+    this.state.activeToDoList.moveItem(id, targetIndex);
+    this.setState({ activeToDoList: this.state.activeToDoList });
   }
 
   renameItem = (item, title) => {
-    this.state.toDoList.renameItem(item.id, title);
-    return this.setState({ toDoList: this.state.toDoList });
+    this.state.activeToDoList.renameItem(item.id, title);
+    this.setState({ activeToDoList: this.state.activeToDoList });
   }
 
   render() {
     return (
-      <div className="App">
-        <header>
-          <div className="Header">
-            <span className="HeaderSpacer"></span>
-            <h1 className="HeaderTitle">Solvent</h1>
-            <button className="HeaderMenu">_</button>
-          </div>
-        </header>
-        <RToDoList
-          toDoList={this.state.toDoList}
+      <div className={"App" + (this.state.isListViewActive ? " overview" : "")}>
+        <DetailView
+          toDoList={this.state.activeToDoList}
           checkItem={this.checkItem}
           addItem={this.addItem}
           removeItem={this.removeItem}
           moveItem={this.moveItem}
           renameItem={this.renameItem}
+          renameList={this.renameList}
+          activateListView={this.activateListView}
+        />
+        <ListView
+          toDoLists={this.state.toDoLists}
+          selectList={this.selectList}
+          addList={this.addList}
         />
       </div>
     );
   }
 }
+
+
 
 export default App;

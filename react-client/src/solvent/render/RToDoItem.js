@@ -9,17 +9,28 @@ export default class RToDoItem extends React.Component {
     super(props);
 
     this.state = {
-      title: props.item.title
+      editing: false,
+      newTitle: ""
     }
   }
 
+  startEditing = () => {
+    this.setState({
+      editing: true,
+      newTitle: this.props.item.title
+    });
+  }
+
   editItem = event => {
-    this.setState({ title: event.target.value });
+    this.setState({newTitle: event.target.value});
   }
 
   renameItem = () => {
-    this.props.onRename(this.props.item, this.state.title);
-    this.setState({ title: this.props.item.title });
+    this.props.onRename(this.props.item, this.state.newTitle);
+    this.setState({
+      editing: false,
+      newTitle: ""
+    });
   }
 
   render() {
@@ -41,7 +52,8 @@ export default class RToDoItem extends React.Component {
             <input
               className="ToDoItemTitle"
               type="text"
-              value={this.state.title}
+              value={this.state.editing ? this.state.newTitle : this.props.item.title}
+              onFocus={this.startEditing}
               onChange={this.editItem}
               onBlur={this.renameItem}
             />

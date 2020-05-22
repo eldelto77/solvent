@@ -9,8 +9,29 @@ export default class RToDoList extends React.Component {
     super(props);
 
     this.state = {
+      editing: false,
+      newTitle: "",
       newItemTitle: ""
     }
+  }
+
+  startTitleEditing = () => {
+    this.setState({
+      editing: true,
+      newTitle: this.props.toDoList.title
+    });
+  }
+
+  editListTitle = event => {
+    this.setState({ newTitle: event.target.value });
+  }
+
+  renameList = () => {
+    this.props.renameList(this.state.newTitle);
+    this.setState({
+      editing: false,
+      newTitle: ""
+    });
   }
 
   addItem = event => {
@@ -19,7 +40,7 @@ export default class RToDoList extends React.Component {
     event.preventDefault();
   }
 
-  setNewItemTitle = event => {
+  editNewItemTitle = event => {
     this.setState({ newItemTitle: event.target.value });
   }
 
@@ -41,7 +62,15 @@ export default class RToDoList extends React.Component {
   render() {
     return (
       <div className="ToDoList">
-        <h1 className="ToDoListTitle">{this.props.toDoList.title}</h1>
+        <input
+          className="ToDoListTitle"
+          type="text"
+          value={this.state.editing ? this.state.newTitle : this.props.toDoList.title}
+          placeholder="Title"
+          onFocus={this.startTitleEditing}
+          onChange={this.editListTitle}
+          onBlur={this.renameList}
+        />
 
         <div className="ToDoListBody">
           <RToDoItems
@@ -54,7 +83,7 @@ export default class RToDoList extends React.Component {
 
           <AddItemBar
             value={this.state.newItemTitle}
-            onChange={this.setNewItemTitle}
+            onChange={this.editNewItemTitle}
             onSubmit={this.addItem}
             disabled={this.state.newItemTitle.trim().length <= 0}
           />

@@ -100,6 +100,11 @@ class ToDoList {
     return newId;
   }
 
+  rename(title) {
+    this.title = title;
+    return this;
+  }
+
   liveView() {
     const liveView = new Map();
     this.liveSet.forEach((item, id) => {
