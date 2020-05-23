@@ -22,6 +22,7 @@ type Controller struct {
 func wireMainController() *Controller {
 	r := mux.NewRouter()
 	r.Handle("/health", baseMiddleWare(fetchHealth)).Methods("GET")
+	r.Handle("/api/to-do-list", baseMiddleWare(fetchToDoLists)).Methods("GET")
 	r.Handle("/api/to-do-list/{id}", baseMiddleWare(fetchToDoList)).Methods("GET")
 	r.Handle("/api/to-do-list", baseMiddleWare(createToDoList)).Methods("POST")
 	r.Handle("/api/to-do-list", baseMiddleWare(updateToDoList)).Methods("PUT")
@@ -46,6 +47,19 @@ func main() {
 func fetchHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status": "ok"}`))
+}
+
+func fetchToDoLists(w http.ResponseWriter, r *http.Request) {
+	toDoLists := service.FetchAll()
+
+	dtos := make([]dto.ToDoListDto, len(toDoLists))
+	for i, toDoList := range toDoLists {
+		dtos[i] = dto.ToDoListToDto(&toDoList)
+	}
+
+	response := map[string][]dto.ToDoListDto{"toDoLists": dtos}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
 
 func fetchToDoList(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +119,7 @@ func updateToDoList(w http.ResponseWriter, r *http.Request) {
 	}
 	newList := dto.ToDoListFromDto(&request)
 
-	mergedList, err := service.Update(newList)
+	mergedList, err := service.Update(&newList)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -9,6 +9,7 @@ type Repository interface {
 	Store(list *solvent.ToDoList) error
 	Update(list *solvent.ToDoList) error
 	Fetch(id uuid.UUID) (*solvent.ToDoList, error)
+	FetchAll() []solvent.ToDoList
 }
 
 type Service struct {
@@ -38,6 +39,10 @@ func (s *Service) Create(title string) (*solvent.ToDoList, error) {
 
 func (s *Service) Fetch(id uuid.UUID) (*solvent.ToDoList, error) {
 	return s.repository.Fetch(id)
+}
+
+func (s *Service) FetchAll() []solvent.ToDoList {
+	return s.repository.FetchAll()
 }
 
 func (s *Service) Update(list *solvent.ToDoList) (*solvent.ToDoList, error) {

@@ -42,3 +42,12 @@ func (r *InMemoryRepository) Fetch(id uuid.UUID) (*solvent.ToDoList, error) {
 
 	return &list, nil
 }
+
+func (r *InMemoryRepository) FetchAll() []solvent.ToDoList {
+	toDoLists := []solvent.ToDoList{}
+	for _, toDoList := range r.store {
+		toDoLists = append(toDoLists, toDoList)
+	}
+
+	return toDoLists
+}

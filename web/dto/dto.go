@@ -62,8 +62,8 @@ func toDoItemMapFromDto(itemsDto []ToDoItemDto) solvent.ToDoItemMap {
 	return items
 }
 
-func ToDoListToDto(list *solvent.ToDoList) *ToDoListDto {
-	return &ToDoListDto{
+func ToDoListToDto(list *solvent.ToDoList) ToDoListDto {
+	return ToDoListDto{
 		ID:           list.ID,
 		Title:        list.Title,
 		LiveSet:      toDoItemMapToDto(list.LiveSet),
@@ -72,8 +72,8 @@ func ToDoListToDto(list *solvent.ToDoList) *ToDoListDto {
 	}
 }
 
-func ToDoListFromDto(list *ToDoListDto) *solvent.ToDoList {
-	return &solvent.ToDoList{
+func ToDoListFromDto(list *ToDoListDto) solvent.ToDoList {
+	return solvent.ToDoList{
 		ID:           list.ID,
 		Title:        list.Title,
 		LiveSet:      toDoItemMapFromDto(list.LiveSet),
