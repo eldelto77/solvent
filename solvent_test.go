@@ -144,6 +144,7 @@ func TestMerge(t *testing.T) {
 	item1, _ := list0.GetItem(id1)
 	item1.Checked = true
 	item1.OrderValue = 5.0
+	item1.UpdatedAt = item1.UpdatedAt + 1
 	list1.LiveSet[id1] = item1
 
 	mergedList, err := list0.Merge(&list1)
@@ -156,9 +157,10 @@ func TestMerge(t *testing.T) {
 	expected := []uuid.UUID{id1, id0, id2}
 	AssertEquals(t, expected, ids, "Item ordering")*/
 
-	item1, _ = mergedList.GetItem(id1)
-	AssertEquals(t, 5.0, item1.OrderValue, "item0.OrderValue")
-	AssertEquals(t, true, item1.Checked, "item0.Checked")
+	mergedItem1, _ := mergedList.GetItem(id1)
+	AssertEquals(t, 5.0, mergedItem1.OrderValue, "mergedItem1.OrderValue")
+	AssertEquals(t, true, mergedItem1.Checked, "mergedItem1.Checked")
+	AssertEquals(t, item1.UpdatedAt, mergedItem1.UpdatedAt, "mergedItem1.UpdatedAt")
 }
 
 func orderedItems(tdl *ToDoList) []ToDoItem {

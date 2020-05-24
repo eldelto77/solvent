@@ -251,6 +251,7 @@ func mergeToDoItems(this, other ToDoItem) (ToDoItem, error) {
 
 	if other.UpdatedAt > this.UpdatedAt {
 		this.OrderValue = other.OrderValue
+		this.UpdatedAt = other.UpdatedAt
 	}
 
 	return this, nil
@@ -264,12 +265,12 @@ func mergeToDoItemMaps(thisMap, otherMap ToDoItemMap) (ToDoItemMap, error) {
 	for k, otherItem := range otherMap {
 		thisItem, ok := thisMap[k]
 		if ok {
-			otherItem, err := mergeToDoItems(thisItem, otherItem)
+			mergedItem, err := mergeToDoItems(thisItem, otherItem)
 			if err != nil {
 				return ToDoItemMap{}, newCannotBeMergedError(thisItem.ID, otherItem.ID)
 			}
+			mergedMap[k] = mergedItem
 		}
-		mergedMap[k] = otherItem
 	}
 
 	return mergedMap, nil

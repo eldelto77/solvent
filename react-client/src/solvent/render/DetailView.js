@@ -4,8 +4,9 @@ import RToDoList from './RToDoList'
 
 export default function DetailView(props) {
   return (
-      <div className="DetailView">
-        <Header onMenuClick={props.activateListView}/>
+    <div className="DetailView">
+      <Header onMenuClick={props.activateListView} />
+      {props.toDoList ?
         <RToDoList
           toDoList={props.toDoList}
           checkItem={props.checkItem}
@@ -15,7 +16,8 @@ export default function DetailView(props) {
           renameItem={props.renameItem}
           renameList={props.renameList}
         />
-      </div>
+        : ""}
+    </div>
   );
 }
 

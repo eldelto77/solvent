@@ -39,6 +39,12 @@ var MainController = wireMainController()
 func main() {
 	port := 8080
 
+	// TODO: Remove afterwards
+	list0, _ := service.Create("List0")
+	list0.AddItem("Item0")
+	service.Update(list0)
+	service.Create("List1")
+
 	http.Handle("/", MainController.Handler)
 	log.Printf("Listening on localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))

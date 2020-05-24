@@ -6,6 +6,8 @@ import ListView from './solvent/render/ListView'
 
 import ToDoList from './solvent/ToDoList'
 
+import { toDoListFromDto, toDoListToDto } from './solvent/Dto'
+
 class App extends React.Component {
 
   constructor(props) {
@@ -23,9 +25,44 @@ class App extends React.Component {
 
     this.state = {
       toDoLists: [toDoList0, toDoList1],
-      activeToDoList: toDoList0,
+      activeToDoList: null,
       isListViewActive: true
     }
+  }
+
+  componentDidMount() {
+    this.timer = setInterval(() => this.loadToDoLists(), 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
+    this.timer = null;
+  }
+
+  loadToDoLists = () => {
+    fetch("/api/to-do-list")
+      .then(response => response.json())
+      .then(responseBody => responseBody.toDoLists.map(toDoListFromDto))
+      .then(toDoLists => {
+        this.setState({ toDoLists: toDoLists });
+
+        if (this.state.activeToDoList) {
+          const activeToDoList = toDoLists.find(list => list.id === this.state.activeToDoList.id);
+          if (activeToDoList) {
+            this.setState({ activeToDoList: activeToDoList });
+          }
+        }
+      });
+    // Execute PUT calls on each change
+  }
+
+  pushChanges = toDoList => {
+    const dto = toDoListToDto(toDoList);
+    fetch("/api/to-do-list", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto)
+    });
   }
 
   selectList = list => {
@@ -52,6 +89,7 @@ class App extends React.Component {
   renameList = title => {
     this.state.activeToDoList.rename(title);
     this.setState({ activeToDoList: this.state.activeToDoList });
+    this.pushChanges(this.state.activeToDoList);
   }
 
   checkItem = item => {
@@ -61,26 +99,31 @@ class App extends React.Component {
       this.state.activeToDoList.checkItem(item.id);
     }
     this.setState({ activeToDoList: this.state.activeToDoList });
+    this.pushChanges(this.state.activeToDoList);
   }
 
   addItem = title => {
     this.state.activeToDoList.addItem(title);
     this.setState({ activeToDoList: this.state.activeToDoList });
+    this.pushChanges(this.state.activeToDoList);
   }
 
   removeItem = item => {
     this.state.activeToDoList.removeItem(item.id);
     this.setState({ activeToDoList: this.state.activeToDoList });
+    this.pushChanges(this.state.activeToDoList);
   }
 
   moveItem = (id, targetIndex) => {
     this.state.activeToDoList.moveItem(id, targetIndex);
     this.setState({ activeToDoList: this.state.activeToDoList });
+    this.pushChanges(this.state.activeToDoList);
   }
 
   renameItem = (item, title) => {
     this.state.activeToDoList.renameItem(item.id, title);
     this.setState({ activeToDoList: this.state.activeToDoList });
+    this.pushChanges(this.state.activeToDoList);
   }
 
   render() {
@@ -96,6 +139,7 @@ class App extends React.Component {
           renameList={this.renameList}
           activateListView={this.activateListView}
         />
+
         <ListView
           toDoLists={this.state.toDoLists}
           selectList={this.selectList}

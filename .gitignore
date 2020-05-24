@@ -7,3 +7,6 @@
 # Unignore all dirs
 !*/
 
+# Ignore built Docker images
+docker_images
+
