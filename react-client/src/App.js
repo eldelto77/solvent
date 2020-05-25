@@ -40,7 +40,7 @@ class App extends React.Component {
   }
 
   loadToDoLists = () => {
-    fetch("/api/to-do-list")
+    fetch("api/to-do-list")
       .then(response => response.json())
       .then(responseBody => responseBody.toDoLists.map(toDoListFromDto))
       .then(toDoLists => {
@@ -58,7 +58,7 @@ class App extends React.Component {
 
   pushChanges = toDoList => {
     const dto = toDoListToDto(toDoList);
-    fetch("/api/to-do-list", {
+    fetch("api/to-do-list", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto)

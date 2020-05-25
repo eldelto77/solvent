@@ -25,11 +25,11 @@ html, body {
 .App {
   width: 200vw;
   display: flex;
-  transition: translate .1s;
+  transition: transform .1s;
 }
 
 .App.overview {
-  translate: -100vw;
+  transform: translate(-100vw);
 }
 
 .ListView {
