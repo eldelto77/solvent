@@ -3,16 +3,17 @@ import { v4 as uuid } from 'uuid'
 
 class ToDoList {
 
-  constructor(id, title, liveSet, tombstoneSet, updatedAt) {
+  constructor(id, title, liveSet, tombstoneSet, updatedAt, createdAt) {
     this.id = id;
     this.title = title;
     this.liveSet = liveSet;
     this.tombstoneSet = tombstoneSet;
     this.updatedAt = updatedAt;
+    this.createdAt = createdAt;
   }
 
   static new(title) {
-    return new ToDoList(uuid(), title, new Map(), new Map(), currentNanos());
+    return new ToDoList(uuid(), title, new Map(), new Map(), currentNanos(), currentNanos());
   }
 
   get items() {

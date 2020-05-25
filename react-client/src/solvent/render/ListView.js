@@ -22,7 +22,8 @@ function Header(props) {
 function ListViewMain(props) {
   return (
     <div className="ListViewMain">
-      {props.toDoLists.map(toDoList =>
+      {props.toDoLists.sort((a, b) => b.createdAt - a.createdAt)
+      .map(toDoList =>
         <ToDoList key={toDoList.id} toDoList={toDoList} onClick={props.onClick} />
       )}
     </div>

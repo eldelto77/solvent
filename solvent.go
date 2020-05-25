@@ -24,6 +24,7 @@ type ToDoList struct {
 	LiveSet      ToDoItemMap
 	TombstoneSet ToDoItemMap
 	UpdatedAt    int64
+	CreatedAt    int64
 }
 
 func NewToDoList(title string) (ToDoList, error) {
@@ -39,6 +40,7 @@ func NewToDoList(title string) (ToDoList, error) {
 		LiveSet:      ToDoItemMap{},
 		TombstoneSet: ToDoItemMap{},
 		UpdatedAt:    time.Now().Local().UnixNano(),
+		CreatedAt:    time.Now().Local().UnixNano(),
 	}
 
 	return toDoList, nil
@@ -199,6 +201,7 @@ func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
 		LiveSet:      mergedLiveSet,
 		TombstoneSet: mergedTombstoneSet,
 		UpdatedAt:    updatedAt,
+		CreatedAt:    tdl.CreatedAt,
 	}
 	return mergedToDoList, nil
 }

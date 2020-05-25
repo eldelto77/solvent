@@ -42,7 +42,8 @@ export function toDoListFromDto(dto) {
     dto.title,
     toDoItemMapFromDto(dto.liveSet),
     toDoItemMapFromDto(dto.tombstoneSet),
-    dto.updatedAt
+    dto.updatedAt,
+    dto.createdAt
   );
 }
 
@@ -52,6 +53,7 @@ export function toDoListToDto(list) {
     "title": list.title,
     "liveSet": toDoItemMapToDto(list.liveSet),
     "tombstoneSet": toDoItemMapToDto(list.tombstoneSet),
-    "updatedAt": list.updatedAt
+    "updatedAt": list.updatedAt,
+    "createdAt": list.createdAt
   };
 }
