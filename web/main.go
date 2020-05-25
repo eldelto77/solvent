@@ -37,7 +37,7 @@ func main() {
 	mainController.RegisterRoutes(r)
 
 	fs := http.FileServer(http.Dir("./static"))
-	r.Handle("/", fs)
+	r.PathPrefix("/").Handler(fs)
 
 	http.Handle("/", r)
 
