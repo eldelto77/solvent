@@ -20,6 +20,7 @@ RUN go build -o /build/main web/main.go
 
 # Build React assets
 RUN cd react-client && \
+    npm install && \
     npm run build && \
     cp -R build/* /build/static
 
