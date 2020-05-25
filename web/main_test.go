@@ -6,6 +6,7 @@ import (
 
 	. "github.com/eldelto/solvent/internal/testutils"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 const listTitle0 = "list0"
@@ -13,8 +14,14 @@ const listTitle1 = "list1"
 
 const itemTitle0 = "item0"
 
+func wireTestServer(t *testing.T) *TestServer {
+	r := mux.NewRouter()
+	mainController.RegisterRoutes(r)
+	return NewTestServer(t, r)
+}
+
 func TestCreateToDoList(t *testing.T) {
-	ts := NewTestServer(t, MainController.Handler)
+	ts := wireTestServer(t)
 	defer ts.Close()
 
 	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
@@ -30,7 +37,7 @@ func TestCreateToDoList(t *testing.T) {
 }
 
 func TestFetchToDoLists(t *testing.T) {
-	ts := NewTestServer(t, MainController.Handler)
+	ts := wireTestServer(t)
 	defer ts.Close()
 
 	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
@@ -77,7 +84,7 @@ func TestFetchToDoLists(t *testing.T) {
 }
 
 func TestFetchToDoList(t *testing.T) {
-	ts := NewTestServer(t, MainController.Handler)
+	ts := wireTestServer(t)
 	defer ts.Close()
 
 	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
@@ -99,7 +106,7 @@ func TestFetchToDoList(t *testing.T) {
 }
 
 func TestUpdateToDoList(t *testing.T) {
-	ts := NewTestServer(t, MainController.Handler)
+	ts := wireTestServer(t)
 	defer ts.Close()
 
 	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)

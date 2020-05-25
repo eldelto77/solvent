@@ -1,57 +1,42 @@
-package main
+package controller
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 
-	"github.com/eldelto/solvent/web/controller"
 	"github.com/eldelto/solvent/web/dto"
-	"github.com/eldelto/solvent/web/persistence"
-	serv "github.com/eldelto/solvent/web/service"
+	"github.com/eldelto/solvent/web/service"
 	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
-type Controller interface {
-	RegisterRoutes(router *mux.Router)
+type MainController struct {
+	service service.Service
 }
 
-var repository = persistence.NewInMemoryRepository()
-var service = serv.NewService(&repository)
-var mainController = controller.NewMainController(service)
-
-func main() {
-	port := 8080
-
-	// TODO: Remove afterwards
-	list0, _ := service.Create("List0")
-	list0.AddItem("Item0")
-	service.Update(list0)
-	service.Create("List1")
-
-	r := mux.NewRouter()
-	mainController.RegisterRoutes(r)
-
-	fs := http.FileServer(http.Dir("./static"))
-	r.Handle("/", fs)
-
-	http.Handle("/", r)
-
-	log.Printf("Listening on localhost:%d\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+func NewMainController(service service.Service) MainController {
+	return MainController{
+		service: service,
+	}
 }
 
-func fetchHealth(w http.ResponseWriter, r *http.Request) {
+func (c *MainController) RegisterRoutes(r *mux.Router) {
+	r.Handle("/api/health", baseMiddleWare(c.fetchHealth)).Methods("GET")
+	r.Handle("/api/to-do-list", baseMiddleWare(c.fetchToDoLists)).Methods("GET")
+	r.Handle("/api/to-do-list/{id}", baseMiddleWare(c.fetchToDoList)).Methods("GET")
+	r.Handle("/api/to-do-list", baseMiddleWare(c.createToDoList)).Methods("POST")
+	r.Handle("/api/to-do-list", baseMiddleWare(c.updateToDoList)).Methods("PUT")
+}
+
+func (c *MainController) fetchHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status": "ok"}`))
 }
 
-func fetchToDoLists(w http.ResponseWriter, r *http.Request) {
-	toDoLists := service.FetchAll()
+func (c *MainController) fetchToDoLists(w http.ResponseWriter, r *http.Request) {
+	toDoLists := c.service.FetchAll()
 
 	dtos := make([]dto.ToDoListDto, len(toDoLists))
 	for i, toDoList := range toDoLists {
@@ -63,7 +48,7 @@ func fetchToDoLists(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func fetchToDoList(w http.ResponseWriter, r *http.Request) {
+func (c *MainController) fetchToDoList(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	uuid, err := uuid.Parse(id)
 	if err != nil {
@@ -71,7 +56,7 @@ func fetchToDoList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	list, err := service.Fetch(uuid)
+	list, err := c.service.Fetch(uuid)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -82,22 +67,22 @@ func fetchToDoList(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto)
 }
 
-type CreateRequest struct {
+type createRequest struct {
 	Title string
 }
 
-func createToDoList(w http.ResponseWriter, r *http.Request) {
+func (c *MainController) createToDoList(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	var request CreateRequest
+	var request createRequest
 	err := decoder.Decode(&request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	list, err := service.Create(request.Title)
+	list, err := c.service.Create(request.Title)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -108,7 +93,7 @@ func createToDoList(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto)
 }
 
-func updateToDoList(w http.ResponseWriter, r *http.Request) {
+func (c *MainController) updateToDoList(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
@@ -120,7 +105,7 @@ func updateToDoList(w http.ResponseWriter, r *http.Request) {
 	}
 	newList := dto.ToDoListFromDto(&request)
 
-	mergedList, err := service.Update(&newList)
+	mergedList, err := c.service.Update(&newList)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
