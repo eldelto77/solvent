@@ -13,8 +13,8 @@ export default function ListView(props) {
 function Header(props) {
   return (
     <div className="ListViewHeader header">
-      <input className="ListViewSearchBar" type="text" placeholder="Type to Search" />
-      <button className="ListViewBackButton menuButton">Back</button>
+      <input className="ListViewSearchBar" type="text" placeholder="Type to search" />
+      <button className="ListViewBackButton menuButton"></button>
     </div>
   );
 }
@@ -41,7 +41,7 @@ function ToDoList(props) {
 function Footer(props) {
   return (
     <div className="ListViewFooter footer">
-      <button className="ListViewAddButton" onClick={props.onClick}>+</button>
+      <button className="ListViewAddButton" onClick={props.onClick}></button>
     </div>
   );
 }

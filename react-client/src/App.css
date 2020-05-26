@@ -43,6 +43,49 @@ input[type=text] {
   height: 100%;
 }
 
+.header {
+  height: 3.5em;
+  padding: 0 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-bottom: solid 2px;
+  /* box-shadow: 0px 0px 5px rgba(0, 0, 0, .3); */
+}
+
+.footer {
+  width: 100vw;
+  height: 4em;
+  padding: 0 1em;
+  position: absolute;
+  bottom: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.menuButton {
+  height: 3em;
+  width: 3em;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  background-image: url(./icons/menu.svg);
+  background-size: 75%;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: .3;
+  transition: opacity .1s;
+  cursor: pointer;
+}
+
+.menuButton:hover {
+  opacity: 1;
+}
+
 .App {
   width: 200vw;
   display: flex;
@@ -70,11 +113,21 @@ input[type=text] {
 }
 
 .ListViewToDoList {
-  display: block;
+  font-family: 'Merriweather Sans', sans-serif;
   width: 100%;
+  display: block;
   margin: 1em 0;
-  min-height: 3em;
+  padding: 0 1em;
+  min-height: 4em;
   text-align: left;
+  border: solid 1px #888;
+  background: none;
+  cursor: pointer;
+  transition: background-color .1s;
+}
+
+.ListViewToDoList:hover {
+  background-color: #eee;
 }
 
 .ListViewHeader {
@@ -82,12 +135,50 @@ input[type=text] {
 }
 
 .ListViewSearchBar {
-  flex-grow:1;
-  margin-right: 1em;
+  width: 50%;
+  font-size: 1em;
+  height: 2.5em !important;
+  padding: 0 3em;
+  flex-grow: 1;
+  border: none;
+  background: none;
+  background-image: url(./icons/magnify.svg);
+  background-repeat: no-repeat;
+  background-position: .5em center;
+}
+
+.ListViewBackButton {
+  background-image: url(./icons/arrow-left.svg);
+}
+
+.ListViewFooter {
+  width: 50%;
+  height: 5em;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.ListViewAddButton {
+  width: 5em;
+  height: 5em;
+  padding: 0;
+  border: none;
+  background: none;
+  background-image: url(./icons/plus-circle.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
+  opacity: .3;
+  transition: opacity .1s;
+  cursor: pointer;
+}
+
+.ListViewAddButton:hover {
+  opacity: 1;
 }
 
 .ToDoList {
-  width: 100%; 
+  width: 100%;
   padding: 0 1em;
   box-sizing: border-box;
 }
@@ -221,33 +312,9 @@ input[type=text] {
   cursor: default;
 }
 
-
-.header {
-  height: 3.5em;
-  padding: 0 1em;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  border-bottom: solid 2px;
-  /* box-shadow: 0px 0px 5px rgba(0, 0, 0, .3); */
-}
-
-.footer {
-  width: 100vw;
-  height: 4em;
-  padding: 0 1em;
-  position: absolute;
-  bottom: 0;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
-}
-
 .HeaderSpacer {
-  height: 3em;
-  width: 3em;
+  height: 2.5em;
+  width: 2.5em;
 }
 
 .HeaderTitle {
@@ -256,24 +323,4 @@ input[type=text] {
   text-align: center;
   flex-grow: 1;
   font-family: 'Pattaya', sans-serif; 
-}
-
-.menuButton {
-  height: 3em;
-  width: 3em;
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: none;
-  background-image: url(./icons/menu.svg);
-  background-size: 75%;
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: .3;
-  transition: opacity .1s;
-  cursor: pointer;
-}
-
-.menuButton:hover {
-  opacity: 1;
 }
