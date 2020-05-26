@@ -151,6 +151,11 @@ input[type=text] {
   background-image: url(./icons/arrow-left.svg);
 }
 
+.ListViewBackButton:disabled {
+  opacity: .3;
+  cursor: default;
+}
+
 .ListViewFooter {
   width: 50%;
   height: 5em;

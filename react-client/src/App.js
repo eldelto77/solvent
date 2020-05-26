@@ -65,6 +65,10 @@ class App extends React.Component {
     });
   }
 
+  backToDetailView = () => {
+    return this.setState({ isListViewActive: false });
+  }
+
   selectList = list => {
     return this.setState({
       activeToDoList: list,
@@ -144,6 +148,8 @@ class App extends React.Component {
           toDoLists={this.state.toDoLists}
           selectList={this.selectList}
           addList={this.addList}
+          onBack={this.backToDetailView}
+          backButtonEnabled={this.state.activeToDoList ? true : false}
         />
       </div>
     );
