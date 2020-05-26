@@ -27,7 +27,7 @@ function Header(props) {
       <div className="DetailViewHeader header">
         <span className="HeaderSpacer"></span>
         <h1 className="HeaderTitle">Solvent</h1>
-        <button className="DetailViewMenuButton menuButton" onClick={props.onMenuClick}>_</button>
+        <button className="DetailViewMenuButton menuButton" onClick={props.onMenuClick}></button>
       </div>
     </header>
   );

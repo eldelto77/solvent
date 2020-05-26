@@ -1,27 +1,47 @@
-html, body {
-  width: 100%;
-  height: 100%; 
-  margin: 0; 
-  overflow: hidden;
+
+/*
+  Fonts
+  Pattaya
+  Merriweather Sans
+  Cabin
+*/
+
+:root {
+  --light-brand-color: #14bca8;
+  --dark-brand-color: #21897e;
+  --accent-color: #ff9f1c;
+  --alert-color: #a20021;
+  --light-background-color: #f6f7eb;
+  --border-radius: 5px;
 }
 
-.ToDoList {
-  background-color: lightgray;
+/*:root {
+  --light-brand-color: #abf0e9;
+  --dark-brand-color: #63b7af;
+  --accent-color: #ff9f1c;
+  --alert-color: #a20021;
+  --light-background-color: #f6f7eb;
+}*/
+
+#root {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
 }
 
-.ToDoItems {
-  background-color: lightcoral;
+body {
+  font-family: 'Cabin', sans-serif;
 }
 
-.ToDoItem {
-  background-color: lightblue;
+input, button {
+  border-radius: var(--border-radius);
+  font-family: 'Cabin', sans-serif;
 }
 
-.header {
-  background-color: lightgreen;
+input[type=text] {
+  height: 100%;
 }
-
-
 
 .App {
   width: 200vw;
@@ -36,10 +56,13 @@ html, body {
 .ListView {
   width: 100vw;
   height: 100vh;
+  overflow: scroll;
 }
 
 .DetailView {
   width: 100vw;
+  height: 100vh;
+  overflow: scroll;
 }
 
 .ListViewMain {
@@ -63,19 +86,19 @@ html, body {
   margin-right: 1em;
 }
 
-/*
-  Fonts
-  Pattaya
-  Merriweather Sans
-  Cabin
-*/
-
 .ToDoList {
-  
+  width: 100%; 
+  padding: 0 1em;
+  box-sizing: border-box;
 }
 
 .ToDoListTitle {
-  margin-top: 0;
+  width: 80%;
+  margin: .5em 0 .3em 0;
+  padding: 0;
+  font-size: 2em;
+  font-family: 'Merriweather Sans', sans-serif;
+  border: none;
 }
 
 .ToDoListBody {
@@ -91,7 +114,8 @@ html, body {
 .ToDoItem {
   height: 3em;
   /*padding-left: 5%;*/
-  padding: 0 1em;
+  padding: .4em 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -99,31 +123,57 @@ html, body {
 }
 
 .ToDoItemCheckbox {
-  height: 1em;
-  width: 1em;
+  height: 1.5em;
+  width: 1.5em;
   margin: 0;
+  background-image: url(./icons/checkbox-blank-circle-outline.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: .3;
+  cursor: pointer;
+}
+
+.ToDoItem.checked > .ToDoItemCheckbox {
+  background-image: url(./icons/check-circle-outline.svg);
+  opacity: 1;
 }
 
 .ToDoItemTitle {
-  margin: 0 0.5em;
-  padding: 0 0.5em;
+  margin: 0 1em;
+  padding: 0 .5em;
   flex-grow: 1;
   border: none;
   background: none;
+  transition: opacity .1s;
+}
+
+.ToDoItem.checked > .ToDoItemTitle {
+  text-decoration: line-through;
+  opacity: .7;
 }
 
 .ToDoItemDelete {
-  height: 3em;
-  width: 3em;
+  height: 1.5em;
+  width: 1.5em;
   padding: 0;
   border: none;
   background: none;
+  background-image: url(./icons/delete-outline.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: .3;
+  transition: opacity .1s;
+  cursor: pointer;
+}
+
+.ToDoItemDelete:hover {
+  opacity: 1;
 }
 
 .AddItemBar {
   height: 3em;
   width: 100%;
-  padding: 0 1em;
+  padding: .4em 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -132,30 +182,59 @@ html, body {
 }
 
 .AddItemBarLogo {
-  height: 1em;
-  width: 1em;
+  width: 1.5em;
+  height: 1.5em;
   text-align: center;
+  visibility: hidden;
 }
 
 .AddItemBarTitle {
-  margin: 0 0.5em;
-  padding: 0 0.5em;
+  margin: 0 1em;
+  padding: 0 .5em;
   flex-grow: 1;
   border: none;
   background: none;
 }
 
+.AddItemBarButton {
+  height: 1.5em;
+  width: 1.5em;
+  padding: 0;
+  font-weight: bold;
+  border: none;
+  background: none;
+  background-image: url(./icons/plus-circle.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: .3;
+  transition: opacity .1s;
+  cursor: pointer;
+}
+
+.AddItemBarButton:hover{
+  opacity: 1;
+}
+
+.AddItemBarButton:disabled {
+  background-image: url(./icons/plus.svg);
+  opacity: .3;
+  cursor: default;
+}
+
+
 .header {
-  height: 3em;
+  height: 3.5em;
   padding: 0 1em;
   display: flex;
   flex-direction: row;
   align-items: center;
+  border-bottom: solid 2px;
+  /* box-shadow: 0px 0px 5px rgba(0, 0, 0, .3); */
 }
 
 .footer {
   width: 100vw;
-  height: 3em;
+  height: 4em;
   padding: 0 1em;
   position: absolute;
   bottom: 0;
@@ -164,7 +243,6 @@ html, body {
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
-  background-color: lightgreen;
 }
 
 .HeaderSpacer {
@@ -173,11 +251,11 @@ html, body {
 }
 
 .HeaderTitle {
-  font-size: 1.5em;
-  color: lightskyblue;
+  margin: 0;
+  font-size: 2em;
   text-align: center;
   flex-grow: 1;
-  
+  font-family: 'Pattaya', sans-serif; 
 }
 
 .menuButton {
@@ -186,5 +264,16 @@ html, body {
   padding: 0;
   margin: 0;
   border: none;
-  background: lightsalmon;
+  background: none;
+  background-image: url(./icons/menu.svg);
+  background-size: 75%;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: .3;
+  transition: opacity .1s;
+  cursor: pointer;
+}
+
+.menuButton:hover {
+  opacity: 1;
 }

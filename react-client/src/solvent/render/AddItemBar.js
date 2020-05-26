@@ -11,7 +11,7 @@ export default function AddItemBar(props) {
         placeholder="New item"
         onChange={props.onChange}
       />
-      <input className="AddItemBarButton" type="submit" value="Add" disabled={props.disabled} />
+      <input className="AddItemBarButton" type="submit" value="" disabled={props.disabled} />
     </form>
   );
 }

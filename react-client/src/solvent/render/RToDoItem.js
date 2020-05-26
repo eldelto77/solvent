@@ -22,7 +22,7 @@ export default class RToDoItem extends React.Component {
   }
 
   editItem = event => {
-    this.setState({newTitle: event.target.value});
+    this.setState({ newTitle: event.target.value });
   }
 
   renameItem = () => {
@@ -38,17 +38,12 @@ export default class RToDoItem extends React.Component {
       <Draggable draggableId={this.props.item.id} index={this.props.index}>
         {provided => (
           <div
-            className="ToDoItem"
+            className={"ToDoItem" + (this.props.item.checked ? " checked" : "")}
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
           >
-            <input
-              className="ToDoItemCheckbox"
-              type="checkbox"
-              checked={this.props.item.checked}
-              onChange={() => this.props.onCheck(this.props.item)}
-            />
+            <span className="ToDoItemCheckbox" onClick={() => this.props.onCheck(this.props.item)}></span>
             <input
               className="ToDoItemTitle"
               type="text"
@@ -59,7 +54,7 @@ export default class RToDoItem extends React.Component {
             />
             <button
               className="ToDoItemDelete"
-              onClick={() => this.props.onRemove(this.props.item)}>x</button>
+              onClick={() => this.props.onRemove(this.props.item)}></button>
           </div>
         )}
       </Draggable>
