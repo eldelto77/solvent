@@ -137,26 +137,34 @@ svg {
   justify-content: space-between;
 }
 
+
+.ListViewSearchBarLogo {
+  width: 2em;
+  height: 2em;
+  margin-left: 0.5em;
+  position: absolute;
+  z-index: -1;
+  cursor: pointer;
+}
+
 .ListViewSearchBar {
   width: 50%;
   font-size: 1em;
   height: 2.5em !important;
+  margin-right: 1em;
   padding: 0 3em;
   flex-grow: 1;
   border: none;
   background: none;
-  background-image: url(./icons/magnify.svg);
-  background-repeat: no-repeat;
-  background-position: .5em center;
-}
-
-.ListViewBackButton {
-  background-image: url(./icons/arrow-left.svg);
 }
 
 .ListViewBackButton:disabled {
   opacity: .2;
   cursor: default;
+}
+
+.ListViewBackButton:disabled > svg {
+  fill: black;
 }
 
 .ListViewFooter {
@@ -172,13 +180,11 @@ svg {
   padding: 0;
   border: none;
   background: none;
-  background-image: url(./icons/plus-circle.svg);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100%;
-  opacity: .2;
-  transition: opacity .1s;
   cursor: pointer;
+}
+
+.ListViewAddButton > svg {
+  fill: var(--light-brand-color);
 }
 
 .ListViewAddButton:hover {
