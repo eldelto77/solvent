@@ -1,5 +1,8 @@
 import React from 'react'
 
+import { ReactComponent as Plus } from '../../icons/plus.svg'
+import { ReactComponent as PlusCircle } from '../../icons/plus-circle.svg'
+
 export default function AddItemBar(props) {
   return (
     <form className="AddItemBar" onSubmit={props.onSubmit}>
@@ -11,7 +14,9 @@ export default function AddItemBar(props) {
         placeholder="New item"
         onChange={props.onChange}
       />
-      <input className="AddItemBarButton" type="submit" value="" disabled={props.disabled} />
+      <button className="AddItemBarButton" type="submit" value="" disabled={props.disabled}>
+        {props.disabled ? <Plus /> : <PlusCircle />}
+      </ button>
     </form>
   );
 }

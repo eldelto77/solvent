@@ -2,6 +2,8 @@ import React from 'react';
 
 import RToDoList from './RToDoList'
 
+import { ReactComponent as Menu } from '../../icons/menu.svg'
+
 export default function DetailView(props) {
   return (
     <div className="DetailView">
@@ -27,7 +29,9 @@ function Header(props) {
       <div className="DetailViewHeader header">
         <span className="HeaderSpacer"></span>
         <h1 className="HeaderTitle">Solvent</h1>
-        <button className="DetailViewMenuButton menuButton" onClick={props.onMenuClick}></button>
+        <button className="DetailViewMenuButton menuButton" onClick={props.onMenuClick}>
+          <Menu />
+        </button>
       </div>
     </header>
   );

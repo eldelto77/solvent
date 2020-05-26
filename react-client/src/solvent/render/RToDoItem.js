@@ -1,6 +1,10 @@
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 
+import { ReactComponent as CheckedCircle } from '../../icons/check-circle-outline.svg'
+import { ReactComponent as CheckedCircleBlank } from '../../icons/checkbox-blank-circle-outline.svg'
+import { ReactComponent as TrashCan } from '../../icons/delete-outline.svg'
+
 // Move to own component and keep newTitle in state.
 // Apply renaming on focus loss
 export default class RToDoItem extends React.Component {
@@ -43,7 +47,9 @@ export default class RToDoItem extends React.Component {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
           >
-            <span className="ToDoItemCheckbox" onClick={() => this.props.onCheck(this.props.item)}></span>
+            <button className="ToDoItemCheckbox" onClick={() => this.props.onCheck(this.props.item)}>
+              {this.props.item.checked ? <CheckedCircle /> : <CheckedCircleBlank />}
+            </ button>
             <input
               className="ToDoItemTitle"
               type="text"
@@ -54,7 +60,9 @@ export default class RToDoItem extends React.Component {
             />
             <button
               className="ToDoItemDelete"
-              onClick={() => this.props.onRemove(this.props.item)}></button>
+              onClick={() => this.props.onRemove(this.props.item)}>
+              <TrashCan />
+            </button>
           </div>
         )}
       </Draggable>

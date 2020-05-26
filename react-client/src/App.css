@@ -43,6 +43,11 @@ input[type=text] {
   height: 100%;
 }
 
+svg {
+  width: 100%;
+  height: 100%;
+}
+
 .header {
   height: 3.5em;
   padding: 0 1em;
@@ -67,19 +72,17 @@ input[type=text] {
 }
 
 .menuButton {
-  height: 3em;
-  width: 3em;
+  height: 2.5em;
+  width: 2.5em;
   padding: 0;
   margin: 0;
   border: none;
   background: none;
-  background-image: url(./icons/menu.svg);
-  background-size: 75%;
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: .3;
-  transition: opacity .1s;
   cursor: pointer;
+}
+
+.menuButton > svg {
+  fill: var(--light-brand-color);
 }
 
 .menuButton:hover {
@@ -152,7 +155,7 @@ input[type=text] {
 }
 
 .ListViewBackButton:disabled {
-  opacity: .3;
+  opacity: .2;
   cursor: default;
 }
 
@@ -173,7 +176,7 @@ input[type=text] {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100%;
-  opacity: .3;
+  opacity: .2;
   transition: opacity .1s;
   cursor: pointer;
 }
@@ -190,7 +193,7 @@ input[type=text] {
 
 .ToDoListTitle {
   width: 80%;
-  margin: .5em 0 .3em 0;
+  margin: 1em 0 .3em 0;
   padding: 0;
   font-size: 2em;
   font-family: 'Merriweather Sans', sans-serif;
@@ -219,19 +222,22 @@ input[type=text] {
 }
 
 .ToDoItemCheckbox {
-  height: 1.5em;
-  width: 1.5em;
+  height: 2em;
+  width: 2em;
   margin: 0;
-  background-image: url(./icons/checkbox-blank-circle-outline.svg);
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: .3;
+  padding: 0;
+  border: none;
+  background: none;
+  opacity: .2;
   cursor: pointer;
 }
 
 .ToDoItem.checked > .ToDoItemCheckbox {
-  background-image: url(./icons/check-circle-outline.svg);
   opacity: 1;
+}
+
+.ToDoItem.checked > .ToDoItemCheckbox > svg {
+  fill: var(--light-brand-color);
 }
 
 .ToDoItemTitle {
@@ -240,30 +246,29 @@ input[type=text] {
   flex-grow: 1;
   border: none;
   background: none;
-  transition: opacity .1s;
 }
 
 .ToDoItem.checked > .ToDoItemTitle {
   text-decoration: line-through;
-  opacity: .7;
+  opacity: .3;
 }
 
 .ToDoItemDelete {
-  height: 1.5em;
-  width: 1.5em;
+  height: 2em;
+  width: 2em;
   padding: 0;
   border: none;
   background: none;
-  background-image: url(./icons/delete-outline.svg);
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: .3;
-  transition: opacity .1s;
+  opacity: .2;
   cursor: pointer;
 }
 
 .ToDoItemDelete:hover {
   opacity: 1;
+}
+
+.ToDoItemDelete:hover > svg {
+  fill: var(--alert-color);
 }
 
 .AddItemBar {
@@ -293,18 +298,18 @@ input[type=text] {
 }
 
 .AddItemBarButton {
-  height: 1.5em;
-  width: 1.5em;
+  height: 2em;
+  width: 2em;
   padding: 0;
   font-weight: bold;
   border: none;
   background: none;
-  background-image: url(./icons/plus-circle.svg);
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: .3;
-  transition: opacity .1s;
   cursor: pointer;
+  justify-content: center;
+}
+
+.AddItemBarButton > svg {
+  fill: var(--light-brand-color);
 }
 
 .AddItemBarButton:hover{
@@ -312,14 +317,17 @@ input[type=text] {
 }
 
 .AddItemBarButton:disabled {
-  background-image: url(./icons/plus.svg);
-  opacity: .3;
+  opacity: .2;
   cursor: default;
 }
 
+.AddItemBarButton:disabled > svg {
+  fill: black;
+}
+
 .HeaderSpacer {
-  height: 2.5em;
-  width: 2.5em;
+  height: 2em;
+  width: 2em;
 }
 
 .HeaderTitle {
@@ -327,5 +335,6 @@ input[type=text] {
   font-size: 2em;
   text-align: center;
   flex-grow: 1;
-  font-family: 'Pattaya', sans-serif; 
+  font-family: 'Pattaya', sans-serif;
+  color: var(--light-brand-color);
 }
