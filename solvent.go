@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// ToDoItem representa a single task that needs to be done
 type ToDoItem struct {
 	ID         uuid.UUID
 	Title      string
@@ -16,8 +17,10 @@ type ToDoItem struct {
 	UpdatedAt  int64
 }
 
+// ToDoItemMap is a custom type representing a mapping from ID -> ToDoItem
 type ToDoItemMap map[uuid.UUID]ToDoItem
 
+// ToDoList represents a whole list of ToDoItems
 type ToDoList struct {
 	ID           uuid.UUID
 	Title        string
@@ -27,6 +30,8 @@ type ToDoList struct {
 	CreatedAt    int64
 }
 
+// NewToDoList create a new ToDoList object with the given title
+// or returns an UnknownError when the ID generation fails
 func NewToDoList(title string) (ToDoList, error) {
 	// TODO: validate input string
 	id, err := randomUUID()
@@ -46,6 +51,8 @@ func NewToDoList(title string) (ToDoList, error) {
 	return toDoList, nil
 }
 
+// Rename sets the title of the ToDoList to the given one and updates
+// the UpdatedAt field
 // TODO: Use types for ToDoListID and ToDoItemID
 func (tdl *ToDoList) Rename(title string) (uuid.UUID, error) {
 	tdl.Title = title
@@ -54,6 +61,8 @@ func (tdl *ToDoList) Rename(title string) (uuid.UUID, error) {
 	return tdl.ID, nil
 }
 
+// AddItem creates a new ToDoItem object and adds it to the ToDoList
+// it is called on
 func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
 	// TODO: validate input string
 
@@ -74,6 +83,8 @@ func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
 	return id, nil
 }
 
+// GetItem returns the ToDoItem matching the given id or returns a
+// NotFoundError if no match could be found
 func (tdl *ToDoList) GetItem(id uuid.UUID) (ToDoItem, error) {
 	item, ok := tdl.liveView()[id]
 	if ok == false {
@@ -83,12 +94,17 @@ func (tdl *ToDoList) GetItem(id uuid.UUID) (ToDoItem, error) {
 	return item, nil
 }
 
+// RemoveItem removes the ToDoItem with the given id from the ToDoList
+// but won't return an error if no match could be found as it is the
+// desired state
 func (tdl *ToDoList) RemoveItem(id uuid.UUID) {
 	if item, ok := tdl.liveView()[id]; ok {
 		tdl.TombstoneSet[id] = item
 	}
 }
 
+// CheckItem checks the ToDoItem with the given id or returns a
+// NotFoundError if no match could be found
 func (tdl *ToDoList) CheckItem(id uuid.UUID) (uuid.UUID, error) {
 	item, err := tdl.GetItem(id)
 	if err == nil {
@@ -99,6 +115,9 @@ func (tdl *ToDoList) CheckItem(id uuid.UUID) (uuid.UUID, error) {
 	return item.ID, err
 }
 
+// UncheckItem unchecks the ToDoItem with the given id by creating a new
+// ToDoItem object with the same attributes or returns a NotfoundError
+// if no match could be found
 func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 	item, err := tdl.GetItem(id)
 	if err != nil {
@@ -122,6 +141,8 @@ func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 	return newID, nil
 }
 
+// GetItems returns a slice with all ToDoItems that are in the liveSet
+// but not in the tombstoneSet and are therefore considered active
 func (tdl *ToDoList) GetItems() []ToDoItem {
 	// TODO: Benchmark pre-allocation
 	items := []ToDoItem{}
@@ -132,6 +153,8 @@ func (tdl *ToDoList) GetItems() []ToDoItem {
 	return items
 }
 
+// MoveItem moves the ToDoItem with the given id to the targeted index
+// or returns a NotFoundError if no match could be found
 func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 	item, err := tdl.GetItem(id)
 	if err != nil {
@@ -170,6 +193,9 @@ func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 	return nil
 }
 
+// Merge combines the current ToDoList with the one passed in as
+// parameter or returns a CannotBeMerged error if the ToDoLists or
+// their ToDoListItems cannot be merged (e.g. they have difeerent IDs)
 func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
 	if tdl.ID != other.ID {
 		return ToDoList{}, newCannotBeMergedError(tdl.ID, other.ID)
@@ -290,8 +316,8 @@ func clampIndex(index int, list []ToDoItem) int {
 	}
 }
 
-// Errors
-
+// NotFoundError indicates that a ToDoListItem with the given ID
+// does not exist
 type NotFoundError struct {
 	ID      uuid.UUID
 	message string
@@ -308,15 +334,18 @@ func (e *NotFoundError) Error() string {
 	return e.message
 }
 
-type InvalidTitleError struct {
+// TODO: Do we even need that?
+/*type InvalidTitleError struct {
 	title   string
 	message string
 }
 
 func (e *InvalidTitleError) Error() string {
 	return e.message
-}
+}*/
 
+// CannotBeMergedError indicates that two entities cannot be merged
+// (e.g. IDs do not match)
 type CannotBeMergedError struct {
 	thisID  uuid.UUID
 	otherID uuid.UUID
@@ -335,6 +364,8 @@ func (e *CannotBeMergedError) Error() string {
 	return e.message
 }
 
+// UnknownError indicates an unhandled error from another library tha
+// gets wrapped
 type UnknownError struct {
 	err     error
 	message string

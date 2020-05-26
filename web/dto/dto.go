@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// ToDoItemDto is a DTO representing a ToDoItem as JSON"
 type ToDoItemDto struct {
 	ID         uuid.UUID `json:"id"`
 	Title      string    `json:"title"`
@@ -13,6 +14,7 @@ type ToDoItemDto struct {
 	UpdatedAt  int64     `json:"updatedAt"`
 }
 
+// ToDoListDto is a DTO representing a ToDoList as JSON"
 type ToDoListDto struct {
 	ID           uuid.UUID     `json:"id"`
 	Title        string        `json:"title"`
@@ -22,6 +24,7 @@ type ToDoListDto struct {
 	CreatedAt    int64         `json:"createdAt"`
 }
 
+// ToDoItemToDto converts a ToDoItem to its DTO representation
 func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
 	return ToDoItemDto{
 		ID:         item.ID,
@@ -32,6 +35,7 @@ func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
 	}
 }
 
+// ToDoItemFromDto converts a DTO representation to an actual ToDoItem
 func ToDoItemFromDto(item ToDoItemDto) solvent.ToDoItem {
 	return solvent.ToDoItem{
 		ID:         item.ID,
@@ -63,6 +67,7 @@ func toDoItemMapFromDto(itemsDto []ToDoItemDto) solvent.ToDoItemMap {
 	return items
 }
 
+// ToDoListToDto converts a ToDoList to its DTO representation
 func ToDoListToDto(list *solvent.ToDoList) ToDoListDto {
 	return ToDoListDto{
 		ID:           list.ID,
@@ -74,6 +79,7 @@ func ToDoListToDto(list *solvent.ToDoList) ToDoListDto {
 	}
 }
 
+// ToDoListFromDto converts a DTO representation to an actual ToDoList
 func ToDoListFromDto(list *ToDoListDto) solvent.ToDoList {
 	return solvent.ToDoList{
 		ID:           list.ID,
