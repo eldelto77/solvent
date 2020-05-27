@@ -10,6 +10,7 @@ type Repository interface {
 	Update(list *solvent.ToDoList) error
 	Fetch(id uuid.UUID) (*solvent.ToDoList, error)
 	FetchAll() []solvent.ToDoList
+	BulkUpdate(lists []solvent.ToDoList) error
 }
 
 type Service struct {
@@ -62,6 +63,30 @@ func (s *Service) Update(list *solvent.ToDoList) (*solvent.ToDoList, error) {
 	}
 
 	return &mergedList, nil
+}
+
+func (s *Service) BulkUpdate(lists []solvent.ToDoList) ([]solvent.ToDoList, error) {
+	updateList := make([]solvent.ToDoList, len(lists))
+	for i, toDoList := range lists {
+		oldList, err := s.Fetch(toDoList.ID)
+
+		if err == nil {
+			mergedList, err := toDoList.Merge(oldList)
+			if err != nil {
+				return nil, err
+			}
+			updateList[i] = mergedList
+		} else {
+			updateList[i] = toDoList
+		}
+	}
+
+	err := s.repository.BulkUpdate(updateList)
+	if err != nil {
+		return nil, err
+	}
+
+	return updateList, nil
 }
 
 // TODO: Handle archived ToDoLists

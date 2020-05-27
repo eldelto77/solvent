@@ -143,3 +143,65 @@ func TestUpdateToDoList(t *testing.T) {
 	itemTitle := response.Body()["liveSet"].([]interface{})[0].(map[string]interface{})["title"].(string)
 	AssertEquals(t, itemTitle0, itemTitle, "itemTitle")
 }
+
+func TestBulkUpdate(t *testing.T) {
+	ts := wireTestServer(t)
+	defer ts.Close()
+
+	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
+	response := ts.POST("/api/to-do-list", body)
+
+	rawID := response.Body()["id"].(string)
+	id0, _ := uuid.Parse(rawID)
+	id1, _ := uuid.NewRandom()
+
+	body = fmt.Sprintf(`{
+		"toDoLists": [
+			{
+				"id": "%s",
+				"title": "%s",
+				"liveSet": [],
+				"tombstoneSet": []
+			},
+			{
+				"id": "%s",
+				"title": "%s",
+				"liveSet": [],
+				"tombstoneSet": []
+			}
+		]
+	}`, id0, listTitle1, id1, listTitle1)
+
+	response = ts.POST("/api/to-do-list/bulk", body)
+	AssertEquals(t, 200, response.StatusCode, "response.StatusCode")
+
+	type toDoListJSON struct {
+		ID    string `json:"id"`
+		Title string `json:"title"`
+	}
+
+	type responseJSON struct {
+		ToDoLists []toDoListJSON `json:"toDoLists"`
+	}
+
+	var responseBody responseJSON
+	err := response.Decode(&responseBody)
+	AssertEquals(t, nil, err, "response.Decode error")
+
+	expectedList0 := toDoListJSON{
+		ID:    id0.String(),
+		Title: listTitle1,
+	}
+	expectedList1 := toDoListJSON{
+		ID:    id1.String(),
+		Title: listTitle1,
+	}
+
+	untypedSlice := make([]interface{}, len(responseBody.ToDoLists))
+	for i := range responseBody.ToDoLists {
+		untypedSlice[i] = responseBody.ToDoLists[i]
+	}
+
+	AssertContains(t, expectedList0, untypedSlice, "responseBody.ToDoLists")
+	AssertContains(t, expectedList1, untypedSlice, "responseBody.ToDoLists")
+}

@@ -5,6 +5,8 @@ import (
 	"github.com/google/uuid"
 )
 
+// TODO: Write custom Unmarshal functions to check for required fields
+
 // ToDoItemDto is a DTO representing a ToDoItem as JSON"
 type ToDoItemDto struct {
 	ID         uuid.UUID `json:"id"`

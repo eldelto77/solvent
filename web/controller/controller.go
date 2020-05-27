@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/eldelto/solvent"
 	"github.com/eldelto/solvent/web/dto"
 	"github.com/eldelto/solvent/web/service"
 	"github.com/google/uuid"
@@ -28,6 +29,7 @@ func (c *MainController) RegisterRoutes(r *mux.Router) {
 	r.Handle("/api/to-do-list/{id}", baseMiddleWare(c.fetchToDoList)).Methods("GET")
 	r.Handle("/api/to-do-list", baseMiddleWare(c.createToDoList)).Methods("POST")
 	r.Handle("/api/to-do-list", baseMiddleWare(c.updateToDoList)).Methods("PUT")
+	r.Handle("/api/to-do-list/bulk", baseMiddleWare(c.pushToDoLists)).Methods("POST")
 }
 
 func (c *MainController) fetchHealth(w http.ResponseWriter, r *http.Request) {
@@ -43,9 +45,12 @@ func (c *MainController) fetchToDoLists(w http.ResponseWriter, r *http.Request) 
 		dtos[i] = dto.ToDoListToDto(&toDoList)
 	}
 
-	response := map[string][]dto.ToDoListDto{"toDoLists": dtos}
+	type response struct {
+		ToDoLists []dto.ToDoListDto `json:"toDoLists"`
+	}
+	responseBody := response{ToDoLists: dtos}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(responseBody)
 }
 
 func (c *MainController) fetchToDoList(w http.ResponseWriter, r *http.Request) {
@@ -67,22 +72,23 @@ func (c *MainController) fetchToDoList(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dto)
 }
 
-type createRequest struct {
-	Title string
-}
-
 func (c *MainController) createToDoList(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	var request createRequest
-	err := decoder.Decode(&request)
+	// TODO: Benchmark if returning a closure over the type is faster than creating it
+	type request struct {
+		Title string
+	}
+
+	var requestBody request
+	err := decoder.Decode(&requestBody)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	list, err := c.service.Create(request.Title)
+	list, err := c.service.Create(requestBody.Title)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -114,6 +120,45 @@ func (c *MainController) updateToDoList(w http.ResponseWriter, r *http.Request) 
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(dto)
+}
+
+func (c *MainController) pushToDoLists(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	type request struct {
+		ToDoLists []dto.ToDoListDto
+	}
+	var requestBody request
+	err := decoder.Decode(&requestBody)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	toDoLists := make([]solvent.ToDoList, len(requestBody.ToDoLists))
+	for i, toDoListDto := range requestBody.ToDoLists {
+		toDoLists[i] = dto.ToDoListFromDto(&toDoListDto)
+	}
+
+	mergedList, err := c.service.BulkUpdate(toDoLists)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	dtos := make([]dto.ToDoListDto, len(mergedList))
+	for i, toDoList := range toDoLists {
+		dtos[i] = dto.ToDoListToDto(&toDoList)
+	}
+
+	type response struct {
+		ToDoLists []dto.ToDoListDto
+	}
+	responseBody := response{ToDoLists: dtos}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(responseBody)
 }
 
 func baseMiddleWare(nextFunc http.HandlerFunc) http.Handler {

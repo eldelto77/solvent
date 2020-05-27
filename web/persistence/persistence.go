@@ -51,3 +51,11 @@ func (r *InMemoryRepository) FetchAll() []solvent.ToDoList {
 
 	return toDoLists
 }
+
+func (r *InMemoryRepository) BulkUpdate(lists []solvent.ToDoList) error {
+	for _, toDoList := range lists {
+		r.store[toDoList.ID] = toDoList
+	}
+
+	return nil
+}
