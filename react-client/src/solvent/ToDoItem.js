@@ -7,6 +7,19 @@ class ToDoItem {
     this.orderValue = orderValue;
     this.updatedAt = updatedAt;
   }
+
+  merge(other) {
+    const checked = this.checked || other.checked
+
+    let orderValue = this.orderValue;
+    let updatedAt = this.updatedAt;
+    if (other.updatedAt > this.updatedAt) {
+      orderValue = other.orderValue;
+      updatedAt = other.updatedAt;
+    }
+
+    return new ToDoItem(this.id, this.title, checked, orderValue, updatedAt);
+  }
 }
 
 export default ToDoItem;

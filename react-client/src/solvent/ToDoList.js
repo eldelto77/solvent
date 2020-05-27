@@ -111,6 +111,35 @@ class ToDoList {
     return this;
   }
 
+  merge(other) {
+    let title = this.title;
+    let updatedAt = this.updatedAt;
+    if (other.updatedAt > this.updatedAt) {
+      title = other.title;
+      updatedAt = other.updatedAt;
+    }
+
+    const mergedLiveSet = this.mergeMaps(this.liveSet, other.liveSet);
+    const mergedTombstoneSet = this.mergeMaps(this.tombstoneSet, other.tombstoneSet);
+
+    return new ToDoList(this.id, title, mergedLiveSet, mergedTombstoneSet, updatedAt, this.createdAt);
+  }
+
+  mergeMaps(thisMap, otherMap) {
+    const mergedMap = new Map();
+    thisMap.forEach((item, id) => mergedMap.set(id, item));
+    otherMap.forEach((item, id) => {
+      if (mergedMap.has(id)) {
+        const mergedItem = mergedMap.get(id).merge(item);
+        mergedMap.set(id, mergedItem);
+      } else {
+        mergedMap.set(id, item);
+      }
+    });
+
+    return mergedMap;
+  }
+
   liveView() {
     const liveView = new Map();
     this.liveSet.forEach((item, id) => {

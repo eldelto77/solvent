@@ -32,11 +32,26 @@ class App extends React.Component {
 
   syncState = async () => {
     await this.pushState(this.state.toDoLists);
-    const toDoLists = await this.fetchState();
-    this.setState({ toDoLists: toDoLists });
+    const newToDoLists = await this.fetchState();
+
+    const oldToDoListMap = new Map();
+    this.state.toDoLists.forEach(list => oldToDoListMap.set(list.id, list));
+
+    const mergedToDoLists = [];
+    newToDoLists.forEach(newToDoList => {
+      if (oldToDoListMap.has(newToDoList.id)) {
+        const oldToDoList = oldToDoListMap.get(newToDoList.id);
+        const mergedToDoList = oldToDoList.merge(newToDoList);
+        mergedToDoLists.push(mergedToDoList);
+      } else {
+        mergedToDoLists.push(newToDoList);
+      }
+    });
+
+    this.setState({ toDoLists: mergedToDoLists });
 
     if (this.state.activeToDoList) {
-      const activeToDoList = toDoLists.find(list => list.id === this.state.activeToDoList.id);
+      const activeToDoList = mergedToDoLists.find(list => list.id === this.state.activeToDoList.id);
       if (activeToDoList) {
         this.setState({ activeToDoList: activeToDoList });
       }
