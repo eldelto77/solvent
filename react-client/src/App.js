@@ -13,25 +13,16 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
-    const toDoList0 = ToDoList.new("List0");
-    toDoList0.addItem("Item0");
-    toDoList0.addItem("Item1");
-    toDoList0.addItem("Item2");
-
-    const toDoList1 = ToDoList.new("List1");
-    toDoList1.addItem("Item3");
-    toDoList1.addItem("Item4");
-    toDoList1.addItem("Item5");
-
     this.state = {
-      toDoLists: [toDoList0, toDoList1],
+      toDoLists: [],
       activeToDoList: null,
       isListViewActive: true
     }
   }
 
   componentDidMount() {
-    this.timer = setInterval(() => this.loadToDoLists(), 1000);
+    this.syncState();
+    this.timer = setInterval(() => this.syncState(), 1000);
   }
 
   componentWillUnmount() {
@@ -39,30 +30,36 @@ class App extends React.Component {
     this.timer = null;
   }
 
-  loadToDoLists = () => {
-    fetch("api/to-do-list")
-      .then(response => response.json())
-      .then(responseBody => responseBody.toDoLists.map(toDoListFromDto))
-      .then(toDoLists => {
-        this.setState({ toDoLists: toDoLists });
+  syncState = async () => {
+    await this.pushState(this.state.toDoLists);
+    const toDoLists = await this.fetchState();
+    this.setState({ toDoLists: toDoLists });
 
-        if (this.state.activeToDoList) {
-          const activeToDoList = toDoLists.find(list => list.id === this.state.activeToDoList.id);
-          if (activeToDoList) {
-            this.setState({ activeToDoList: activeToDoList });
-          }
-        }
-      });
-    // Execute PUT calls on each change
+    if (this.state.activeToDoList) {
+      const activeToDoList = toDoLists.find(list => list.id === this.state.activeToDoList.id);
+      if (activeToDoList) {
+        this.setState({ activeToDoList: activeToDoList });
+      }
+    }
   }
 
-  pushChanges = toDoList => {
-    const dto = toDoListToDto(toDoList);
-    fetch("api/to-do-list", {
-      method: "PUT",
+  pushState = async toDoLists => {
+    const dtos = toDoLists.map(toDoListToDto);
+    const requestBody = {
+      toDoLists: dtos
+    }
+
+    return fetch("api/to-do-list/bulk", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dto)
+      body: JSON.stringify(requestBody)
     });
+  }
+
+  fetchState = async () => {
+    const response = await fetch("api/to-do-list");
+    const responseBody = await response.json();
+    return responseBody.toDoLists.map(toDoListFromDto);
   }
 
   backToDetailView = () => {
@@ -93,7 +90,6 @@ class App extends React.Component {
   renameList = title => {
     this.state.activeToDoList.rename(title);
     this.setState({ activeToDoList: this.state.activeToDoList });
-    this.pushChanges(this.state.activeToDoList);
   }
 
   checkItem = item => {
@@ -103,31 +99,26 @@ class App extends React.Component {
       this.state.activeToDoList.checkItem(item.id);
     }
     this.setState({ activeToDoList: this.state.activeToDoList });
-    this.pushChanges(this.state.activeToDoList);
   }
 
   addItem = title => {
     this.state.activeToDoList.addItem(title);
     this.setState({ activeToDoList: this.state.activeToDoList });
-    this.pushChanges(this.state.activeToDoList);
   }
 
   removeItem = item => {
     this.state.activeToDoList.removeItem(item.id);
     this.setState({ activeToDoList: this.state.activeToDoList });
-    this.pushChanges(this.state.activeToDoList);
   }
 
   moveItem = (id, targetIndex) => {
     this.state.activeToDoList.moveItem(id, targetIndex);
     this.setState({ activeToDoList: this.state.activeToDoList });
-    this.pushChanges(this.state.activeToDoList);
   }
 
   renameItem = (item, title) => {
     this.state.activeToDoList.renameItem(item.id, title);
     this.setState({ activeToDoList: this.state.activeToDoList });
-    this.pushChanges(this.state.activeToDoList);
   }
 
   render() {
@@ -155,7 +146,5 @@ class App extends React.Component {
     );
   }
 }
-
-
 
 export default App;
