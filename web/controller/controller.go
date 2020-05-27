@@ -14,10 +14,10 @@ import (
 )
 
 type MainController struct {
-	service service.Service
+	service *service.Service
 }
 
-func NewMainController(service service.Service) MainController {
+func NewMainController(service *service.Service) MainController {
 	return MainController{
 		service: service,
 	}

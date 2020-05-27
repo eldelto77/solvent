@@ -18,7 +18,7 @@ type Controller interface {
 
 var repository = persistence.NewInMemoryRepository()
 var service = serv.NewService(&repository)
-var mainController = controller.NewMainController(service)
+var mainController = controller.NewMainController(&service)
 
 func main() {
 	port := 8080
