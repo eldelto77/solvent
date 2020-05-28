@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ReactComponent as ArrowLeft } from '../../icons/arrow-left.svg'
 import { ReactComponent as Magnify } from '../../icons/magnify.svg'
-import { ReactComponent as PlusCircle } from '../../icons/plus-circle.svg'
+import { ReactComponent as PlusCircle } from '../../icons/plus-circle-shadow.svg'
 
 export default function ListView(props) {
   return (

@@ -11,8 +11,12 @@
   --dark-brand-color: #21897e;
   --accent-color: #ff9f1c;
   --alert-color: #a20021;
+  --inactive-opacity: .6;
+  --disabled-color: black;
+  --disabled-opacity: .4;
   --light-background-color: #f6f7eb;
   --border-radius: 5px;
+  --box-shadow: 0px 1px 5px rgba(0, 0, 0, .2);
 }
 
 /*:root {
@@ -42,6 +46,11 @@ input, button {
 
 input[type=text] {
   height: 100%;
+}
+
+input[type=text]::placeholder {
+  opacity: var(--inactive-opacity);
+  color: var(--light-background-color);
 }
 
 svg {
@@ -124,8 +133,9 @@ svg {
   min-height: 4em;
   text-align: left;
   border: none;
-  background-color: var(--light-background-color);
   cursor: pointer;
+  box-shadow: var(--box-shadow);
+  background-color: var(--light-background-color);
 }
 
 .ListViewHeader {
@@ -153,7 +163,8 @@ button:disabled:hover {
 }
 
 .ListViewSearchBarLogo > svg {
-  fill: lightgrey;
+  fill: black;
+  opacity: var(--inactive-opacity);
 }
 
 .ListViewSearchBar {
@@ -164,12 +175,16 @@ button:disabled:hover {
   padding: 0 3em;
   flex-grow: 1;
   border: none;
-  box-shadow: 0px 1px 5px rgba(0, 0, 0, .2);
+  box-shadow: var(--box-shadow);
   background: var(--light-background-color);
 }
 
+.ListViewSearchBar::placeholder {
+  color: black !important;
+}
+
 .ListViewBackButton:disabled {
-  opacity: .2;
+  opacity: var(--disabled-opacity);
   cursor: default;
 }
 
@@ -208,6 +223,8 @@ button:disabled:hover {
   font-size: 2em;
   font-family: 'Merriweather Sans', sans-serif;
   border: none;
+  background: none;
+  color: var(--light-background-color);
 }
 
 .ToDoListBody {
@@ -251,6 +268,7 @@ button:disabled:hover {
 }
 
 .ToDoItemTitle {
+  font-size: 1em;
   margin: 0 1em;
   padding: 0 .5em;
   flex-grow: 1;
@@ -261,7 +279,7 @@ button:disabled:hover {
 
 .ToDoItem.checked > .ToDoItemTitle {
   text-decoration: line-through;
-  opacity: .3;
+  opacity: var(--inactive-opacity);
 }
 
 .ToDoItemDelete {
@@ -270,8 +288,12 @@ button:disabled:hover {
   padding: 0;
   border: none;
   background: none;
-  opacity: .2;
+  opacity: var(--inactive-opacity);
   cursor: pointer;
+}
+
+.ToDoItemDelete > svg {
+  fill: var(--light-background-color);
 }
 
 .ToDoItemDelete:hover {
@@ -294,18 +316,20 @@ button:disabled:hover {
 }
 
 .AddItemBarLogo {
-  width: 1.5em;
-  height: 1.5em;
+  width: 2em;
+  height: 2em;
   text-align: center;
   visibility: hidden;
 }
 
 .AddItemBarTitle {
+  font-size: 1em;
   margin: 0 1em;
   padding: 0 .5em;
   flex-grow: 1;
   border: none;
   background: none;
+  color: var(--light-background-color);
 }
 
 .AddItemBarButton {
@@ -320,7 +344,7 @@ button:disabled:hover {
 }
 
 .AddItemBarButton > svg {
-  fill: var(--light-brand-color);
+  fill: var(--light-background-color);
 }
 
 .AddItemBarButton:hover{
@@ -328,12 +352,8 @@ button:disabled:hover {
 }
 
 .AddItemBarButton:disabled {
-  opacity: .2;
+  opacity: var(--disabled-opacity);
   cursor: default;
-}
-
-.AddItemBarButton:disabled > svg {
-  fill: black;
 }
 
 .HeaderSpacer {
