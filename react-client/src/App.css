@@ -7,13 +7,16 @@
 */
 
 :root {
+  --text-color: black;
   --light-brand-color: #14bca8;
   --dark-brand-color: #21897e;
   --accent-color: #ff9f1c;
   --alert-color: #a20021;
   --inactive-opacity: .6;
+  --inactive-opacity-light-bg: .2;
   --disabled-color: black;
-  --disabled-opacity: .4;
+  --disabled-opacity: .2;
+  --disabled-opacity-light-bg: .2;
   --light-background-color: #f6f7eb;
   --border-radius: 5px;
   --box-shadow: 0px 1px 5px rgba(0, 0, 0, .2);
@@ -49,8 +52,8 @@ input[type=text] {
 }
 
 input[type=text]::placeholder {
-  opacity: var(--inactive-opacity);
-  color: var(--light-background-color);
+  color: var(--text-color);
+  opacity: var(--inactive-opacity-light-bg);
 }
 
 svg {
@@ -94,10 +97,6 @@ svg {
   fill: var(--light-background-color);
 }
 
-.menuButton:hover {
-  opacity: 1;
-}
-
 .App {
   width: 200vw;
   display: flex;
@@ -118,6 +117,10 @@ svg {
   width: 100vw;
   height: 100vh;
   overflow: scroll;
+}
+
+.DetailViewMain {
+  padding: 0 1em;
 }
 
 .ListViewMain {
@@ -163,8 +166,8 @@ button:disabled:hover {
 }
 
 .ListViewSearchBarLogo > svg {
-  fill: black;
-  opacity: var(--inactive-opacity);
+  fill: var(--text-color);
+  opacity: var(--inactive-opacity-light-bg);
 }
 
 .ListViewSearchBar {
@@ -177,10 +180,6 @@ button:disabled:hover {
   border: none;
   box-shadow: var(--box-shadow);
   background: var(--light-background-color);
-}
-
-.ListViewSearchBar::placeholder {
-  color: black !important;
 }
 
 .ListViewBackButton:disabled {
@@ -212,19 +211,21 @@ button:disabled:hover {
 
 .ToDoList {
   width: 100%;
-  padding: 0 1em;
+  padding: 1em 1em .3em 1em;
   box-sizing: border-box;
+  border-radius: 10px;
+  box-shadow: var(--box-shadow);
+  background-color: var(--light-background-color);
 }
 
 .ToDoListTitle {
   width: 80%;
-  margin: 1em 0 .3em 0;
-  padding: 0;
+  margin: .5em 0 .3em 0;
   font-size: 2em;
   font-family: 'Merriweather Sans', sans-serif;
   border: none;
   background: none;
-  color: var(--light-background-color);
+  color: var(--text-color);
 }
 
 .ToDoListBody {
@@ -255,31 +256,27 @@ button:disabled:hover {
   padding: 0;
   border: none;
   background: none;
-  opacity: .5;
+  opacity: var(--inactive-opacity-light-bg);
   cursor: pointer;
 }
 
 .ToDoItem.checked > .ToDoItemCheckbox {
   opacity: 1;
-}
-
-.ToDoItem > .ToDoItemCheckbox > svg {
-  fill: var(--light-background-color);
+  fill: var(--light-brand-color);
 }
 
 .ToDoItemTitle {
   font-size: 1em;
-  margin: 0 1em;
+  margin: 0 .3em;
   padding: 0 .5em;
   flex-grow: 1;
   border: none;
   background: none;
-  color: var(--light-background-color);
 }
 
 .ToDoItem.checked > .ToDoItemTitle {
   text-decoration: line-through;
-  opacity: var(--inactive-opacity);
+  opacity: var(--inactive-opacity-light-bg);
 }
 
 .ToDoItemDelete {
@@ -288,12 +285,8 @@ button:disabled:hover {
   padding: 0;
   border: none;
   background: none;
-  opacity: var(--inactive-opacity);
+  opacity: var(--inactive-opacity-light-bg);
   cursor: pointer;
-}
-
-.ToDoItemDelete > svg {
-  fill: var(--light-background-color);
 }
 
 .ToDoItemDelete:hover {
@@ -324,12 +317,11 @@ button:disabled:hover {
 
 .AddItemBarTitle {
   font-size: 1em;
-  margin: 0 1em;
+  margin: 0 .3em;
   padding: 0 .5em;
   flex-grow: 1;
   border: none;
   background: none;
-  color: var(--light-background-color);
 }
 
 .AddItemBarButton {
@@ -344,16 +336,16 @@ button:disabled:hover {
 }
 
 .AddItemBarButton > svg {
-  fill: var(--light-background-color);
-}
-
-.AddItemBarButton:hover{
-  opacity: 1;
+  fill: var(--light-brand-color);
 }
 
 .AddItemBarButton:disabled {
   opacity: var(--disabled-opacity);
   cursor: default;
+}
+
+.AddItemBarButton:disabled > svg {
+  fill: var(--disabled-color);
 }
 
 .HeaderSpacer {

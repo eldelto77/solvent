@@ -8,17 +8,19 @@ export default function DetailView(props) {
   return (
     <div className="DetailView">
       <Header onMenuClick={props.activateListView} />
-      {props.toDoList ?
-        <RToDoList
-          toDoList={props.toDoList}
-          checkItem={props.checkItem}
-          addItem={props.addItem}
-          removeItem={props.removeItem}
-          moveItem={props.moveItem}
-          renameItem={props.renameItem}
-          renameList={props.renameList}
-        />
-        : ""}
+      <div className="DetailViewMain">
+        {props.toDoList ?
+          <RToDoList
+            toDoList={props.toDoList}
+            checkItem={props.checkItem}
+            addItem={props.addItem}
+            removeItem={props.removeItem}
+            moveItem={props.moveItem}
+            renameItem={props.renameItem}
+            renameList={props.renameList}
+          />
+          : ""}
+      </div>
     </div>
   );
 }
