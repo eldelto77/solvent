@@ -32,6 +32,7 @@
 
 body {
   font-family: 'Cabin', sans-serif;
+  background-color: var(--light-brand-color);
 }
 
 input, button {
@@ -54,8 +55,7 @@ svg {
   display: flex;
   flex-direction: row;
   align-items: center;
-  border-bottom: solid 2px;
-  /* box-shadow: 0px 0px 5px rgba(0, 0, 0, .3); */
+  /*box-shadow: 0px 1px 5px rgba(0, 0, 0, .2);*/
 }
 
 .footer {
@@ -82,7 +82,7 @@ svg {
 }
 
 .menuButton > svg {
-  fill: var(--light-brand-color);
+  fill: var(--light-background-color);
 }
 
 .menuButton:hover {
@@ -123,10 +123,9 @@ svg {
   padding: 0 1em;
   min-height: 4em;
   text-align: left;
-  border: solid 1px #888;
-  background: none;
+  border: none;
+  background-color: var(--light-background-color);
   cursor: pointer;
-  transition: background-color .1s;
 }
 
 .ListViewHeader {
@@ -150,8 +149,11 @@ button:disabled:hover {
   height: 2em;
   margin-left: 0.5em;
   position: absolute;
-  z-index: -1;
   cursor: pointer;
+}
+
+.ListViewSearchBarLogo > svg {
+  fill: lightgrey;
 }
 
 .ListViewSearchBar {
@@ -162,16 +164,13 @@ button:disabled:hover {
   padding: 0 3em;
   flex-grow: 1;
   border: none;
-  background: none;
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, .2);
+  background: var(--light-background-color);
 }
 
 .ListViewBackButton:disabled {
   opacity: .2;
   cursor: default;
-}
-
-.ListViewBackButton:disabled > svg {
-  fill: black;
 }
 
 .ListViewFooter {
@@ -193,11 +192,7 @@ button:disabled:hover {
 }
 
 .ListViewAddButton > svg {
-  fill: var(--light-brand-color);
-}
-
-.ListViewAddButton:hover {
-  opacity: 1;
+  fill: var(--light-background-color);
 }
 
 .ToDoList {
@@ -243,7 +238,7 @@ button:disabled:hover {
   padding: 0;
   border: none;
   background: none;
-  opacity: .2;
+  opacity: .5;
   cursor: pointer;
 }
 
@@ -251,8 +246,8 @@ button:disabled:hover {
   opacity: 1;
 }
 
-.ToDoItem.checked > .ToDoItemCheckbox > svg {
-  fill: var(--light-brand-color);
+.ToDoItem > .ToDoItemCheckbox > svg {
+  fill: var(--light-background-color);
 }
 
 .ToDoItemTitle {
@@ -261,6 +256,7 @@ button:disabled:hover {
   flex-grow: 1;
   border: none;
   background: none;
+  color: var(--light-background-color);
 }
 
 .ToDoItem.checked > .ToDoItemTitle {
@@ -351,5 +347,5 @@ button:disabled:hover {
   text-align: center;
   flex-grow: 1;
   font-family: 'Pattaya', sans-serif;
-  color: var(--light-brand-color);
+  color: var(--light-background-color);
 }
