@@ -7,23 +7,50 @@ import (
 
 // TODO: Write custom Unmarshal functions to check for required fields
 
-// ToDoItemDto is a DTO representing a ToDoItem as JSON"
-type ToDoItemDto struct {
-	ID         uuid.UUID `json:"id"`
-	Title      string    `json:"title"`
-	Checked    bool      `json:"checked"`
-	OrderValue float64   `json:"orderValue"`
-	UpdatedAt  int64     `json:"updatedAt"`
+type OrderValueDto struct {
+	Value     float64 `json:"value"`
+	UpdatedAt int64   `json:"updatedAt"`
 }
 
-// ToDoListDto is a DTO representing a ToDoList as JSON"
-type ToDoListDto struct {
-	ID           uuid.UUID     `json:"id"`
-	Title        string        `json:"title"`
-	LiveSet      []ToDoItemDto `json:"liveSet"`
-	TombstoneSet []ToDoItemDto `json:"tombstoneSet"`
-	UpdatedAt    int64         `json:"updatedAt"`
-	CreatedAt    int64         `json:"createdAt"`
+func orderValueToDto(orderValue solvent.OrderValue) OrderValueDto {
+	return OrderValueDto{
+		Value:     orderValue.Value,
+		UpdatedAt: orderValue.UpdatedAt,
+	}
+}
+
+func orderValueFromDto(orderValue OrderValueDto) solvent.OrderValue {
+	return solvent.OrderValue{
+		Value:     orderValue.Value,
+		UpdatedAt: orderValue.UpdatedAt,
+	}
+}
+
+type TitleDto struct {
+	Value     string `json:"value"`
+	UpdatedAt int64  `json:"updatedAt"`
+}
+
+func titleToDto(title solvent.Title) TitleDto {
+	return TitleDto{
+		Value:     title.Value,
+		UpdatedAt: title.UpdatedAt,
+	}
+}
+
+func titleFromDto(title TitleDto) solvent.Title {
+	return solvent.Title{
+		Value:     title.Value,
+		UpdatedAt: title.UpdatedAt,
+	}
+}
+
+// ToDoItemDto is a DTO representing a ToDoItem as JSON"
+type ToDoItemDto struct {
+	ID         uuid.UUID     `json:"id"`
+	Title      string        `json:"title"`
+	Checked    bool          `json:"checked"`
+	OrderValue OrderValueDto `json:"orderValue"`
 }
 
 // ToDoItemToDto converts a ToDoItem to its DTO representation
@@ -32,8 +59,7 @@ func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
 		ID:         item.ID,
 		Title:      item.Title,
 		Checked:    item.Checked,
-		OrderValue: item.OrderValue,
-		UpdatedAt:  item.UpdatedAt,
+		OrderValue: orderValueToDto(item.OrderValue),
 	}
 }
 
@@ -43,8 +69,7 @@ func ToDoItemFromDto(item ToDoItemDto) solvent.ToDoItem {
 		ID:         item.ID,
 		Title:      item.Title,
 		Checked:    item.Checked,
-		OrderValue: item.OrderValue,
-		UpdatedAt:  item.UpdatedAt,
+		OrderValue: orderValueFromDto(item.OrderValue),
 	}
 }
 
@@ -69,14 +94,23 @@ func toDoItemMapFromDto(itemsDto []ToDoItemDto) solvent.ToDoItemMap {
 	return items
 }
 
+// ToDoListDto is a DTO representing a ToDoList as JSON"
+type ToDoListDto struct {
+	ID           uuid.UUID     `json:"id"`
+	Title        TitleDto      `json:"title"`
+	LiveSet      []ToDoItemDto `json:"liveSet"`
+	TombstoneSet []ToDoItemDto `json:"tombstoneSet"`
+	UpdatedAt    int64         `json:"updatedAt"`
+	CreatedAt    int64         `json:"createdAt"`
+}
+
 // ToDoListToDto converts a ToDoList to its DTO representation
 func ToDoListToDto(list *solvent.ToDoList) ToDoListDto {
 	return ToDoListDto{
 		ID:           list.ID,
-		Title:        list.Title,
+		Title:        titleToDto(list.Title),
 		LiveSet:      toDoItemMapToDto(list.LiveSet),
 		TombstoneSet: toDoItemMapToDto(list.TombstoneSet),
-		UpdatedAt:    list.UpdatedAt,
 		CreatedAt:    list.CreatedAt,
 	}
 }
@@ -85,10 +119,9 @@ func ToDoListToDto(list *solvent.ToDoList) ToDoListDto {
 func ToDoListFromDto(list *ToDoListDto) solvent.ToDoList {
 	return solvent.ToDoList{
 		ID:           list.ID,
-		Title:        list.Title,
+		Title:        titleFromDto(list.Title),
 		LiveSet:      toDoItemMapFromDto(list.LiveSet),
 		TombstoneSet: toDoItemMapFromDto(list.TombstoneSet),
-		UpdatedAt:    list.UpdatedAt,
 		CreatedAt:    list.CreatedAt,
 	}
 }

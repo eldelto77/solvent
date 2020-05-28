@@ -22,20 +22,20 @@ func TestNewToDoList(t *testing.T) {
 	list, err := NewToDoList(listTitle0)
 
 	AssertEquals(t, nil, err, "NewToDoList error")
-	AssertEquals(t, listTitle0, list.Title, "list.Title")
+	AssertEquals(t, listTitle0, list.Title.Value, "list.Title.Value")
 	AssertEquals(t, 0, len(list.LiveSet), "list.LiveSet length")
 	AssertEquals(t, 0, len(list.TombstoneSet), "list.TombstoneSet length")
 }
 
 func TestRename(t *testing.T) {
 	list, _ := NewToDoList(listTitle0)
-	oldTs := list.UpdatedAt
+	oldTs := list.Title.UpdatedAt
 
 	id, err := list.Rename(listTitle1)
 	AssertEquals(t, nil, err, "list.Rename error")
-	AssertEquals(t, listTitle1, list.Title, "title")
+	AssertEquals(t, listTitle1, list.Title.Value, "title.Value")
 	AssertEquals(t, list.ID, id, "id")
-	AssertEquals(t, true, list.UpdatedAt > oldTs, "UpdatedAt")
+	AssertEquals(t, true, list.Title.UpdatedAt > oldTs, "title.UpdatedAt")
 }
 
 func TestAddItem(t *testing.T) {
@@ -143,14 +143,13 @@ func TestMerge(t *testing.T) {
 
 	item1, _ := list0.GetItem(id1)
 	item1.Checked = true
-	item1.OrderValue = 5.0
-	item1.UpdatedAt = item1.UpdatedAt + 1
+	item1.OrderValue.Value = 5.0
+	item1.OrderValue.UpdatedAt = item1.OrderValue.UpdatedAt + 1
 	list1.LiveSet[id1] = item1
 
 	mergedList, err := list0.Merge(&list1)
 	AssertEquals(t, nil, err, "list0.Merge error")
-	AssertEquals(t, listTitle1, mergedList.Title, "mergedList.Title")
-	AssertEquals(t, list1.UpdatedAt, mergedList.UpdatedAt, "mergedList.UpdatedAt")
+	AssertEquals(t, list1.Title, mergedList.Title, "mergedList.Title")
 
 	// TODO: Handle equal sort order assigned from item creation
 	/*ids := itemIDs(orderedItems(&mergedList))
@@ -158,14 +157,18 @@ func TestMerge(t *testing.T) {
 	AssertEquals(t, expected, ids, "Item ordering")*/
 
 	mergedItem1, _ := mergedList.GetItem(id1)
-	AssertEquals(t, 5.0, mergedItem1.OrderValue, "mergedItem1.OrderValue")
+
+	expectedOrderValue := OrderValue{
+		Value:     5.0,
+		UpdatedAt: item1.OrderValue.UpdatedAt,
+	}
+	AssertEquals(t, expectedOrderValue, mergedItem1.OrderValue, "mergedItem1.OrderValue")
 	AssertEquals(t, true, mergedItem1.Checked, "mergedItem1.Checked")
-	AssertEquals(t, item1.UpdatedAt, mergedItem1.UpdatedAt, "mergedItem1.UpdatedAt")
 }
 
 func orderedItems(tdl *ToDoList) []ToDoItem {
 	items := tdl.GetItems()
-	sort.Slice(items, func(i, j int) bool { return items[i].OrderValue < items[j].OrderValue })
+	sort.Slice(items, func(i, j int) bool { return items[i].OrderValue.Value < items[j].OrderValue.Value })
 
 	return items
 }

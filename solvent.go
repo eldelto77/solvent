@@ -8,13 +8,22 @@ import (
 	"github.com/google/uuid"
 )
 
+type OrderValue struct {
+	Value     float64
+	UpdatedAt int64
+}
+
+type Title struct {
+	Value     string
+	UpdatedAt int64
+}
+
 // ToDoItem representa a single task that needs to be done
 type ToDoItem struct {
 	ID         uuid.UUID
 	Title      string
 	Checked    bool
-	OrderValue float64
-	UpdatedAt  int64
+	OrderValue OrderValue
 }
 
 // ToDoItemMap is a custom type representing a mapping from ID -> ToDoItem
@@ -23,10 +32,9 @@ type ToDoItemMap map[uuid.UUID]ToDoItem
 // ToDoList represents a whole list of ToDoItems
 type ToDoList struct {
 	ID           uuid.UUID
-	Title        string
+	Title        Title
 	LiveSet      ToDoItemMap
 	TombstoneSet ToDoItemMap
-	UpdatedAt    int64
 	CreatedAt    int64
 }
 
@@ -39,13 +47,16 @@ func NewToDoList(title string) (ToDoList, error) {
 		return ToDoList{}, err
 	}
 
+	titleStruct := Title{
+		Value:     title,
+		UpdatedAt: time.Now().UTC().UnixNano(),
+	}
 	toDoList := ToDoList{
 		ID:           id,
-		Title:        title,
+		Title:        titleStruct,
 		LiveSet:      ToDoItemMap{},
 		TombstoneSet: ToDoItemMap{},
-		UpdatedAt:    time.Now().Local().UnixNano(),
-		CreatedAt:    time.Now().Local().UnixNano(),
+		CreatedAt:    time.Now().UTC().UnixNano(),
 	}
 
 	return toDoList, nil
@@ -55,8 +66,11 @@ func NewToDoList(title string) (ToDoList, error) {
 // the UpdatedAt field
 // TODO: Use types for ToDoListID and ToDoItemID
 func (tdl *ToDoList) Rename(title string) (uuid.UUID, error) {
-	tdl.Title = title
-	tdl.UpdatedAt = time.Now().UnixNano()
+	newTitle := Title{
+		Value:     title,
+		UpdatedAt: time.Now().UTC().UnixNano(),
+	}
+	tdl.Title = newTitle
 
 	return tdl.ID, nil
 }
@@ -71,12 +85,16 @@ func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
 		return uuid.Nil, err
 	}
 
+	orderValue := OrderValue{
+		Value:     tdl.nextOrderValue(),
+		UpdatedAt: time.Now().UTC().UnixNano(),
+	}
+
 	item := ToDoItem{
 		ID:         id,
 		Title:      title,
 		Checked:    false,
-		OrderValue: tdl.nextOrderValue(),
-		UpdatedAt:  time.Now().UnixNano(),
+		OrderValue: orderValue,
 	}
 	tdl.LiveSet[id] = item
 
@@ -134,7 +152,6 @@ func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 		Title:      item.Title,
 		Checked:    false,
 		OrderValue: item.OrderValue,
-		UpdatedAt:  item.UpdatedAt,
 	}
 	tdl.LiveSet[newID] = newItem
 
@@ -163,21 +180,21 @@ func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 
 	items := tdl.GetItems()
 	index := clampIndex(targetIndex, items)
-	sort.Slice(items, func(i, j int) bool { return items[i].OrderValue < items[j].OrderValue })
+	sort.Slice(items, func(i, j int) bool { return items[i].OrderValue.Value < items[j].OrderValue.Value })
 
-	orderValueMid := items[index].OrderValue
+	orderValueMid := items[index].OrderValue.Value
 	var orderValueAdjacent float64
-	if orderValueMid < item.OrderValue {
+	if orderValueMid < item.OrderValue.Value {
 		// Moving item up
 		if (index - 1) >= 0 {
-			orderValueAdjacent = items[index-1].OrderValue
+			orderValueAdjacent = items[index-1].OrderValue.Value
 		} else {
 			orderValueAdjacent = 0.0
 		}
-	} else if orderValueMid > item.OrderValue {
+	} else if orderValueMid > item.OrderValue.Value {
 		// Moving item down
 		if (index + 1) < len(items) {
-			orderValueAdjacent = items[index+1].OrderValue
+			orderValueAdjacent = items[index+1].OrderValue.Value
 		} else {
 			orderValueAdjacent = tdl.nextOrderValue()
 		}
@@ -186,8 +203,12 @@ func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 		return nil
 	}
 
-	newOrderValue := (orderValueMid + orderValueAdjacent) / 2
+	newOrderValue := OrderValue{
+		Value:     (orderValueMid + orderValueAdjacent) / 2,
+		UpdatedAt: time.Now().UTC().UnixNano(),
+	}
 	item.OrderValue = newOrderValue
+
 	tdl.LiveSet[item.ID] = item
 
 	return nil
@@ -201,13 +222,10 @@ func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
 		return ToDoList{}, newCannotBeMergedError(tdl.ID, other.ID)
 	}
 
-	var updatedAt int64
-	var title string
-	if other.UpdatedAt > tdl.UpdatedAt {
-		updatedAt = other.UpdatedAt
+	var title Title
+	if other.Title.UpdatedAt > tdl.Title.UpdatedAt {
 		title = other.Title
 	} else {
-		updatedAt = tdl.UpdatedAt
 		title = tdl.Title
 	}
 
@@ -226,7 +244,6 @@ func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
 		Title:        title,
 		LiveSet:      mergedLiveSet,
 		TombstoneSet: mergedTombstoneSet,
-		UpdatedAt:    updatedAt,
 		CreatedAt:    tdl.CreatedAt,
 	}
 	return mergedToDoList, nil
@@ -261,8 +278,8 @@ func (tdl *ToDoList) liveView() ToDoItemMap {
 func (tdl *ToDoList) nextOrderValue() float64 {
 	orderValue := 0.0
 	for _, item := range tdl.liveView() {
-		if item.OrderValue > orderValue {
-			orderValue = item.OrderValue
+		if item.OrderValue.Value > orderValue {
+			orderValue = item.OrderValue.Value
 		}
 	}
 
@@ -278,9 +295,8 @@ func mergeToDoItems(this, other ToDoItem) (ToDoItem, error) {
 		this.Checked = true
 	}
 
-	if other.UpdatedAt > this.UpdatedAt {
+	if other.OrderValue.UpdatedAt > this.OrderValue.UpdatedAt {
 		this.OrderValue = other.OrderValue
-		this.UpdatedAt = other.UpdatedAt
 	}
 
 	return this, nil
