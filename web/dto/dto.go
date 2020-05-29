@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/eldelto/solvent"
+	"github.com/eldelto/solvent/crdt"
 	"github.com/google/uuid"
 )
 
@@ -54,7 +55,7 @@ type ToDoItemDto struct {
 }
 
 // ToDoItemToDto converts a ToDoItem to its DTO representation
-func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
+func toDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
 	return ToDoItemDto{
 		ID:         item.ID,
 		Title:      item.Title,
@@ -64,7 +65,7 @@ func ToDoItemToDto(item solvent.ToDoItem) ToDoItemDto {
 }
 
 // ToDoItemFromDto converts a DTO representation to an actual ToDoItem
-func ToDoItemFromDto(item ToDoItemDto) solvent.ToDoItem {
+func toDoItemFromDto(item ToDoItemDto) solvent.ToDoItem {
 	return solvent.ToDoItem{
 		ID:         item.ID,
 		Title:      item.Title,
@@ -73,55 +74,75 @@ func ToDoItemFromDto(item ToDoItemDto) solvent.ToDoItem {
 	}
 }
 
-func toDoItemMapToDto(items solvent.ToDoItemMap) []ToDoItemDto {
-	itemsDto := make([]ToDoItemDto, len(items))
-
-	i := 0
-	for _, v := range items {
-		itemsDto[i] = ToDoItemToDto(v)
-		i++
-	}
-
-	return itemsDto
+type ToDoItemPSetDto struct {
+	LiveSet      []ToDoItemDto `json:"liveSet"`
+	TombstoneSet []ToDoItemDto `json:"tombstoneSet"`
 }
 
-func toDoItemMapFromDto(itemsDto []ToDoItemDto) solvent.ToDoItemMap {
-	items := solvent.ToDoItemMap{}
-	for _, v := range itemsDto {
-		items[v.ID] = ToDoItemFromDto(v)
+func toDoItemPSetToDto(set solvent.ToDoItemPSet) ToDoItemPSetDto {
+	return ToDoItemPSetDto{
+		LiveSet:      itemMapToToDoItemDtos(set.LiveSet),
+		TombstoneSet: itemMapToToDoItemDtos(set.TombstoneSet),
+	}
+}
+
+func toDoItemPSetFromDto(set ToDoItemPSetDto) solvent.ToDoItemPSet {
+	pset := crdt.PSet{
+		LiveSet:      itemMapFromToDoItemDtos(set.LiveSet),
+		TombstoneSet: itemMapFromToDoItemDtos(set.TombstoneSet),
 	}
 
-	return items
+	return solvent.ToDoItemPSet{
+		PSet: pset,
+	}
+}
+
+func itemMapToToDoItemDtos(itemMap crdt.ItemMap) []ToDoItemDto {
+	dtos := make([]ToDoItemDto, 0, len(itemMap))
+	for _, value := range itemMap {
+		toDoItem := *value.(*solvent.ToDoItem)
+		dtos = append(dtos, toDoItemToDto(toDoItem))
+	}
+
+	return dtos
+}
+
+func itemMapFromToDoItemDtos(dtos []ToDoItemDto) crdt.ItemMap {
+	itemMap := make(crdt.ItemMap, len(dtos))
+	for _, dto := range dtos {
+		toDoItem := toDoItemFromDto(dto)
+		key := toDoItem.Identifier()
+		itemMap[key] = &toDoItem
+	}
+
+	return itemMap
 }
 
 // ToDoListDto is a DTO representing a ToDoList as JSON"
 type ToDoListDto struct {
-	ID           uuid.UUID     `json:"id"`
-	Title        TitleDto      `json:"title"`
-	LiveSet      []ToDoItemDto `json:"liveSet"`
-	TombstoneSet []ToDoItemDto `json:"tombstoneSet"`
-	UpdatedAt    int64         `json:"updatedAt"`
-	CreatedAt    int64         `json:"createdAt"`
+	ID        uuid.UUID       `json:"id"`
+	Title     TitleDto        `json:"title"`
+	ToDoItems ToDoItemPSetDto `json:"toDoItems"`
+	UpdatedAt int64           `json:"updatedAt"`
+	CreatedAt int64           `json:"createdAt"`
 }
 
 // ToDoListToDto converts a ToDoList to its DTO representation
 func ToDoListToDto(list *solvent.ToDoList) ToDoListDto {
 	return ToDoListDto{
-		ID:           list.ID,
-		Title:        titleToDto(list.Title),
-		LiveSet:      toDoItemMapToDto(list.LiveSet),
-		TombstoneSet: toDoItemMapToDto(list.TombstoneSet),
-		CreatedAt:    list.CreatedAt,
+		ID:        list.ID,
+		Title:     titleToDto(list.Title),
+		ToDoItems: toDoItemPSetToDto(list.ToDoItems),
+		CreatedAt: list.CreatedAt,
 	}
 }
 
 // ToDoListFromDto converts a DTO representation to an actual ToDoList
 func ToDoListFromDto(list *ToDoListDto) solvent.ToDoList {
 	return solvent.ToDoList{
-		ID:           list.ID,
-		Title:        titleFromDto(list.Title),
-		LiveSet:      toDoItemMapFromDto(list.LiveSet),
-		TombstoneSet: toDoItemMapFromDto(list.TombstoneSet),
-		CreatedAt:    list.CreatedAt,
+		ID:        list.ID,
+		Title:     titleFromDto(list.Title),
+		ToDoItems: toDoItemPSetFromDto(list.ToDoItems),
+		CreatedAt: list.CreatedAt,
 	}
 }

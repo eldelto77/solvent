@@ -5,14 +5,17 @@ import (
 	"sort"
 	"time"
 
+	"github.com/eldelto/solvent/crdt"
 	"github.com/google/uuid"
 )
 
+// OrderValue represents an ordering value with its correspondent update timestamp
 type OrderValue struct {
 	Value     float64
 	UpdatedAt int64
 }
 
+// Title represents a title value with its correspondent update timestamp
 type Title struct {
 	Value     string
 	UpdatedAt int64
@@ -26,25 +29,58 @@ type ToDoItem struct {
 	OrderValue OrderValue
 }
 
-// ToDoItemMap is a custom type representing a mapping from ID -> ToDoItem
-type ToDoItemMap map[uuid.UUID]ToDoItem
+// Identifier returns the ID of the ToDoItem
+func (t *ToDoItem) Identifier() interface{} {
+	return t.ID
+}
+
+// Merge combines the current ToDoItem with the one passed in as
+// parameter or returns a CannotBeMerged error if the ToDoItems
+// cannot be merged (e.g. they have different IDs)
+func (t *ToDoItem) Merge(other crdt.Mergeable) (crdt.Mergeable, error) {
+	if t.Identifier() != other.Identifier() {
+		err := crdt.NewCannotBeMergedError(t, other)
+		return nil, err
+	}
+
+	otherToDoItem, ok := other.(*ToDoItem)
+	if !ok {
+		err := crdt.NewTypeMisMatchError(t, other)
+		return nil, err
+	}
+
+	mergedToDoItem := ToDoItem{
+		ID:         t.ID,
+		Title:      t.Title,
+		Checked:    t.Checked,
+		OrderValue: t.OrderValue,
+	}
+
+	if otherToDoItem.Checked {
+		mergedToDoItem.Checked = true
+	}
+
+	if otherToDoItem.OrderValue.UpdatedAt > t.OrderValue.UpdatedAt {
+		mergedToDoItem.OrderValue = otherToDoItem.OrderValue
+	}
+
+	return &mergedToDoItem, nil
+}
 
 // ToDoList represents a whole list of ToDoItems
 type ToDoList struct {
-	ID           uuid.UUID
-	Title        Title
-	LiveSet      ToDoItemMap
-	TombstoneSet ToDoItemMap
-	CreatedAt    int64
+	ID        uuid.UUID
+	Title     Title
+	ToDoItems ToDoItemPSet
+	CreatedAt int64
 }
 
 // NewToDoList create a new ToDoList object with the given title
 // or returns an UnknownError when the ID generation fails
-func NewToDoList(title string) (ToDoList, error) {
-	// TODO: validate input string
+func newToDoList(title string) (*ToDoList, error) {
 	id, err := randomUUID()
 	if err != nil {
-		return ToDoList{}, err
+		return nil, err
 	}
 
 	titleStruct := Title{
@@ -52,14 +88,13 @@ func NewToDoList(title string) (ToDoList, error) {
 		UpdatedAt: time.Now().UTC().UnixNano(),
 	}
 	toDoList := ToDoList{
-		ID:           id,
-		Title:        titleStruct,
-		LiveSet:      ToDoItemMap{},
-		TombstoneSet: ToDoItemMap{},
-		CreatedAt:    time.Now().UTC().UnixNano(),
+		ID:        id,
+		Title:     titleStruct,
+		ToDoItems: NewToDoItemPSet(),
+		CreatedAt: time.Now().UTC().UnixNano(),
 	}
 
-	return toDoList, nil
+	return &toDoList, nil
 }
 
 // Rename sets the title of the ToDoList to the given one and updates
@@ -96,15 +131,15 @@ func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
 		Checked:    false,
 		OrderValue: orderValue,
 	}
-	tdl.LiveSet[id] = item
+	err = tdl.ToDoItems.Add(item)
 
-	return id, nil
+	return id, err
 }
 
 // GetItem returns the ToDoItem matching the given id or returns a
 // NotFoundError if no match could be found
 func (tdl *ToDoList) GetItem(id uuid.UUID) (ToDoItem, error) {
-	item, ok := tdl.liveView()[id]
+	item, ok := tdl.ToDoItems.LiveView()[id]
 	if ok == false {
 		return item, newNotFoundError(id)
 	}
@@ -116,8 +151,9 @@ func (tdl *ToDoList) GetItem(id uuid.UUID) (ToDoItem, error) {
 // but won't return an error if no match could be found as it is the
 // desired state
 func (tdl *ToDoList) RemoveItem(id uuid.UUID) {
-	if item, ok := tdl.liveView()[id]; ok {
-		tdl.TombstoneSet[id] = item
+	item, err := tdl.GetItem(id)
+	if err == nil {
+		tdl.ToDoItems.Remove(item)
 	}
 }
 
@@ -127,7 +163,7 @@ func (tdl *ToDoList) CheckItem(id uuid.UUID) (uuid.UUID, error) {
 	item, err := tdl.GetItem(id)
 	if err == nil {
 		item.Checked = true
-		tdl.LiveSet[id] = item
+		tdl.ToDoItems.Add(item)
 	}
 
 	return item.ID, err
@@ -139,7 +175,7 @@ func (tdl *ToDoList) CheckItem(id uuid.UUID) (uuid.UUID, error) {
 func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 	item, err := tdl.GetItem(id)
 	if err != nil {
-		return uuid.Nil, newNotFoundError(id)
+		return uuid.Nil, err
 	}
 	tdl.RemoveItem(item.ID)
 
@@ -153,17 +189,20 @@ func (tdl *ToDoList) UncheckItem(id uuid.UUID) (uuid.UUID, error) {
 		Checked:    false,
 		OrderValue: item.OrderValue,
 	}
-	tdl.LiveSet[newID] = newItem
+	err = tdl.ToDoItems.Add(newItem)
 
-	return newID, nil
+	return newID, err
 }
+
+// TODO: Implement RenameItem(id uuid.UUID, title string)
 
 // GetItems returns a slice with all ToDoItems that are in the liveSet
 // but not in the tombstoneSet and are therefore considered active
 func (tdl *ToDoList) GetItems() []ToDoItem {
 	// TODO: Benchmark pre-allocation
-	items := []ToDoItem{}
-	for _, item := range tdl.liveView() {
+	liveView := tdl.ToDoItems.LiveView()
+	items := make([]ToDoItem, 0, len(liveView))
+	for _, item := range liveView {
 		items = append(items, item)
 	}
 
@@ -209,44 +248,138 @@ func (tdl *ToDoList) MoveItem(id uuid.UUID, targetIndex int) error {
 	}
 	item.OrderValue = newOrderValue
 
-	tdl.LiveSet[item.ID] = item
+	return tdl.ToDoItems.Add(item)
+}
 
-	return nil
+// Identifier returns the ID of the ToDoList
+func (tdl *ToDoList) Identifier() interface{} {
+	return tdl.ID
 }
 
 // Merge combines the current ToDoList with the one passed in as
 // parameter or returns a CannotBeMerged error if the ToDoLists or
-// their ToDoListItems cannot be merged (e.g. they have difeerent IDs)
-func (tdl *ToDoList) Merge(other *ToDoList) (ToDoList, error) {
-	if tdl.ID != other.ID {
-		return ToDoList{}, newCannotBeMergedError(tdl.ID, other.ID)
+// their ToDoListItems cannot be merged (e.g. they have different IDs)
+func (tdl *ToDoList) Merge(other crdt.Mergeable) (crdt.Mergeable, error) {
+	if tdl.Identifier() != other.Identifier() {
+		return nil, crdt.NewCannotBeMergedError(tdl, other)
+	}
+
+	otherToDoList, ok := other.(*ToDoList)
+	if !ok {
+		err := crdt.NewTypeMisMatchError(tdl, other)
+		return nil, err
 	}
 
 	var title Title
-	if other.Title.UpdatedAt > tdl.Title.UpdatedAt {
-		title = other.Title
+	if otherToDoList.Title.UpdatedAt > tdl.Title.UpdatedAt {
+		title = otherToDoList.Title
 	} else {
 		title = tdl.Title
 	}
 
-	mergedLiveSet, err := mergeToDoItemMaps(tdl.LiveSet, other.LiveSet)
+	mergedToDoItems, err := tdl.ToDoItems.Merge(&otherToDoList.ToDoItems)
 	if err != nil {
-		return ToDoList{}, err
-	}
-
-	mergedTombstoneSet, err := mergeToDoItemMaps(tdl.TombstoneSet, other.TombstoneSet)
-	if err != nil {
-		return ToDoList{}, err
+		return nil, err
 	}
 
 	mergedToDoList := ToDoList{
-		ID:           tdl.ID,
-		Title:        title,
-		LiveSet:      mergedLiveSet,
-		TombstoneSet: mergedTombstoneSet,
-		CreatedAt:    tdl.CreatedAt,
+		ID:        tdl.ID,
+		Title:     title,
+		ToDoItems: mergedToDoItems,
+		CreatedAt: tdl.CreatedAt,
 	}
-	return mergedToDoList, nil
+	return &mergedToDoList, nil
+}
+
+type Notebook struct {
+	ID        uuid.UUID
+	ToDoLists ToDoListPSet
+	CreatedAt int64
+}
+
+func NewNotebook() (*Notebook, error) {
+	id, err := randomUUID()
+	if err != nil {
+		return nil, err
+	}
+
+	notebook := Notebook{
+		ID:        id,
+		ToDoLists: NewToDoListPSet(),
+		CreatedAt: time.Now().UTC().UnixNano(),
+	}
+	return &notebook, nil
+}
+
+func (n *Notebook) AddList(title string) (*ToDoList, error) {
+	list, err := newToDoList(title)
+	if err != nil {
+		return nil, err
+	}
+
+	err = n.ToDoLists.Add(list)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (n *Notebook) RemoveList(id uuid.UUID) {
+	// TODO: Move existance check to PSet?
+	list, err := n.GetList(id)
+	if err == nil {
+		n.ToDoLists.Remove(list)
+	}
+}
+
+func (n *Notebook) GetList(id uuid.UUID) (*ToDoList, error) {
+	// TODO: Move Get method to PSet?
+	list, ok := n.ToDoLists.LiveView()[id]
+	if ok == false {
+		return nil, newNotFoundError(id)
+	}
+
+	return list, nil
+}
+
+func (n *Notebook) GetLists() []*ToDoList {
+	liveView := n.ToDoLists.LiveView()
+	lists := make([]*ToDoList, 0, len(liveView))
+	for _, list := range liveView {
+		lists = append(lists, list)
+	}
+
+	return lists
+}
+
+func (n *Notebook) Identifier() interface{} {
+	return n.ID
+}
+
+func (n *Notebook) Merge(other crdt.Mergeable) (crdt.Mergeable, error) {
+	if n.Identifier() != other.Identifier() {
+		err := crdt.NewCannotBeMergedError(n, other)
+		return nil, err
+	}
+
+	otherNotebook, ok := other.(*Notebook)
+	if !ok {
+		err := crdt.NewTypeMisMatchError(n, other)
+		return nil, err
+	}
+
+	mergedToDoLists, err := n.ToDoLists.Merge(&otherNotebook.ToDoLists)
+	if err != nil {
+		return nil, err
+	}
+
+	mergedNotebook := Notebook{
+		ID:        n.ID,
+		ToDoLists: mergedToDoLists,
+		CreatedAt: n.CreatedAt,
+	}
+	return &mergedNotebook, nil
 }
 
 func randomUUID() (uuid.UUID, error) {
@@ -261,64 +394,15 @@ func randomUUID() (uuid.UUID, error) {
 	return id, err
 }
 
-func (tdl *ToDoList) liveView() ToDoItemMap {
-	// TODO: Pass expected length?
-	liveView := ToDoItemMap{}
-
-	for key, value := range tdl.LiveSet {
-		_, deleted := tdl.TombstoneSet[key]
-		if !deleted {
-			liveView[key] = value
-		}
-	}
-
-	return liveView
-}
-
 func (tdl *ToDoList) nextOrderValue() float64 {
 	orderValue := 0.0
-	for _, item := range tdl.liveView() {
+	for _, item := range tdl.ToDoItems.LiveView() {
 		if item.OrderValue.Value > orderValue {
 			orderValue = item.OrderValue.Value
 		}
 	}
 
 	return orderValue + 10
-}
-
-func mergeToDoItems(this, other ToDoItem) (ToDoItem, error) {
-	if this.ID != other.ID {
-		return this, newCannotBeMergedError(this.ID, other.ID)
-	}
-
-	if other.Checked {
-		this.Checked = true
-	}
-
-	if other.OrderValue.UpdatedAt > this.OrderValue.UpdatedAt {
-		this.OrderValue = other.OrderValue
-	}
-
-	return this, nil
-}
-
-func mergeToDoItemMaps(thisMap, otherMap ToDoItemMap) (ToDoItemMap, error) {
-	mergedMap := ToDoItemMap{}
-	for k, v := range thisMap {
-		mergedMap[k] = v
-	}
-	for k, otherItem := range otherMap {
-		thisItem, ok := thisMap[k]
-		if ok {
-			mergedItem, err := mergeToDoItems(thisItem, otherItem)
-			if err != nil {
-				return ToDoItemMap{}, newCannotBeMergedError(thisItem.ID, otherItem.ID)
-			}
-			mergedMap[k] = mergedItem
-		}
-	}
-
-	return mergedMap, nil
 }
 
 func clampIndex(index int, list []ToDoItem) int {
@@ -359,26 +443,6 @@ func (e *NotFoundError) Error() string {
 func (e *InvalidTitleError) Error() string {
 	return e.message
 }*/
-
-// CannotBeMergedError indicates that two entities cannot be merged
-// (e.g. IDs do not match)
-type CannotBeMergedError struct {
-	thisID  uuid.UUID
-	otherID uuid.UUID
-	message string
-}
-
-func newCannotBeMergedError(thisID, otherID uuid.UUID) *CannotBeMergedError {
-	return &CannotBeMergedError{
-		thisID:  thisID,
-		otherID: otherID,
-		message: fmt.Sprintf("item with ID '%v' cannot be merged with item with ID '%v'", thisID, otherID),
-	}
-}
-
-func (e *CannotBeMergedError) Error() string {
-	return e.message
-}
 
 // UnknownError indicates an unhandled error from another library tha
 // gets wrapped

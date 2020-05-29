@@ -52,17 +52,18 @@ func (s *Service) Update(list *solvent.ToDoList) (*solvent.ToDoList, error) {
 		return nil, err
 	}
 
-	mergedList, err := list.Merge(oldList)
+	merged, err := list.Merge(oldList)
+	if err != nil {
+		return nil, err
+	}
+	mergedList := merged.(*solvent.ToDoList)
+
+	err = s.repository.Update(mergedList)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.repository.Update(&mergedList)
-	if err != nil {
-		return nil, err
-	}
-
-	return &mergedList, nil
+	return mergedList, nil
 }
 
 func (s *Service) BulkUpdate(lists []solvent.ToDoList) ([]solvent.ToDoList, error) {
@@ -71,11 +72,12 @@ func (s *Service) BulkUpdate(lists []solvent.ToDoList) ([]solvent.ToDoList, erro
 		oldList, err := s.Fetch(toDoList.ID)
 
 		if err == nil {
-			mergedList, err := toDoList.Merge(oldList)
+			merged, err := toDoList.Merge(oldList)
 			if err != nil {
 				return nil, err
 			}
-			updateList[i] = mergedList
+			mergedList := merged.(*solvent.ToDoList)
+			updateList[i] = *mergedList
 		} else {
 			updateList[i] = toDoList
 		}
