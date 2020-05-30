@@ -113,8 +113,6 @@ func (tdl *ToDoList) Rename(title string) (uuid.UUID, error) {
 // AddItem creates a new ToDoItem object and adds it to the ToDoList
 // it is called on
 func (tdl *ToDoList) AddItem(title string) (uuid.UUID, error) {
-	// TODO: validate input string
-
 	id, err := randomUUID()
 	if err != nil {
 		return uuid.Nil, err
@@ -433,16 +431,6 @@ func newNotFoundError(id uuid.UUID) *NotFoundError {
 func (e *NotFoundError) Error() string {
 	return e.message
 }
-
-// TODO: Do we even need that?
-/*type InvalidTitleError struct {
-	title   string
-	message string
-}
-
-func (e *InvalidTitleError) Error() string {
-	return e.message
-}*/
 
 // UnknownError indicates an unhandled error from another library tha
 // gets wrapped

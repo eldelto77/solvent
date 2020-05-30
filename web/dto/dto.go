@@ -187,7 +187,7 @@ func itemMapFromToDoListDtos(dtos []ToDoListDto) crdt.ItemMap {
 type NotebookDto struct {
 	ID        uuid.UUID       `json:"id"`
 	ToDoLists ToDoListPSetDto `json:"toDoLists"`
-	CreatedAt int64
+	CreatedAt int64           `json:"createdAt"`
 }
 
 func NotebookToDto(notebook *solvent.Notebook) NotebookDto {

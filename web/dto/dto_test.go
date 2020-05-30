@@ -8,8 +8,8 @@ import (
 )
 
 func TestToDoListPSetFromDto(t *testing.T) {
-	dto := ToDoListPSetDto {
-		LiveSet: []ToDoListDto{},
+	dto := ToDoListPSetDto{
+		LiveSet:      []ToDoListDto{},
 		TombstoneSet: []ToDoListDto{},
 	}
 

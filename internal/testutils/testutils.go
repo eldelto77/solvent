@@ -95,6 +95,10 @@ func (ts *TestServer) PUT(path string, body string) Response {
 	return ts.request("PUT", path, body)
 }
 
+func (ts *TestServer) DELETE(path string) Response {
+	return ts.request("DELETE", path, "")
+}
+
 func (ts *TestServer) request(verb, path string, body string) Response {
 	url := ts.URL + path
 	bodyData := bytes.NewBufferString(body)

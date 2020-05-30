@@ -9,10 +9,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const listTitle0 = "list0"
-const listTitle1 = "list1"
+type toDoListsDto struct {
+	LiveSet      []interface{} `json:"liveSet"`
+	TombstoneSet []interface{} `json:"tombstoneSet"`
+}
 
-const itemTitle0 = "item0"
+type responseDto struct {
+	ID        uuid.UUID    `json:"id"`
+	ToDoLists toDoListsDto `json:"toDoLists"`
+	CreatedAt int64        `json:"createdAt"`
+}
 
 func wireTestServer(t *testing.T) *TestServer {
 	r := mux.NewRouter()
@@ -20,188 +26,104 @@ func wireTestServer(t *testing.T) *TestServer {
 	return NewTestServer(t, r)
 }
 
-func TestCreateToDoList(t *testing.T) {
+func TestCreateNotebook(t *testing.T) {
 	ts := wireTestServer(t)
 	defer ts.Close()
 
-	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
-	response := ts.POST("/api/to-do-list", body)
+	response := ts.POST("/api/notebook", "")
 	AssertEquals(t, 200, response.StatusCode, "response.StatusCode")
 
-	title := response.Body()["title"]
-	AssertEquals(t, listTitle0, title, "title")
-
-	id := response.Body()["id"].(string)
-	_, err := uuid.Parse(id)
-	AssertEquals(t, nil, err, "uuid.Parse error")
-}
-
-func TestFetchToDoLists(t *testing.T) {
-	ts := wireTestServer(t)
-	defer ts.Close()
-
-	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
-	response := ts.POST("/api/to-do-list", body)
-	rawID := response.Body()["id"].(string)
-	id0, _ := uuid.Parse(rawID)
-
-	body = fmt.Sprintf(`{"title":"%s"}`, listTitle1)
-	response = ts.POST("/api/to-do-list", body)
-	rawID = response.Body()["id"].(string)
-	id1, _ := uuid.Parse(rawID)
-
-	response = ts.GET("/api/to-do-list")
-
-	type toDoListJSON struct {
-		ID    string `json:"id"`
-		Title string `json:"title"`
-	}
-
-	type responseJSON struct {
-		ToDoLists []toDoListJSON `json:"toDoLists"`
-	}
-
-	var responseBody responseJSON
+	var responseBody responseDto
 	err := response.Decode(&responseBody)
 	AssertEquals(t, nil, err, "response.Decode error")
 
-	expectedList0 := toDoListJSON{
-		ID:    id0.String(),
-		Title: listTitle0,
-	}
-	expectedList1 := toDoListJSON{
-		ID:    id1.String(),
-		Title: listTitle1,
-	}
-
-	untypedSlice := make([]interface{}, len(responseBody.ToDoLists))
-	for i := range responseBody.ToDoLists {
-		untypedSlice[i] = responseBody.ToDoLists[i]
-	}
-
-	AssertContains(t, expectedList0, untypedSlice, "responseBody.ToDoLists")
-	AssertContains(t, expectedList1, untypedSlice, "responseBody.ToDoLists")
+	AssertNotEquals(t, nil, responseBody.ID, "responseBody.ID")
+	AssertEquals(t, []interface{}{}, responseBody.ToDoLists.LiveSet, "responseBody.ToDoLists.Liveset")
+	AssertEquals(t, []interface{}{}, responseBody.ToDoLists.TombstoneSet, "responseBody.ToDoLists.TombstoneSet")
+	AssertNotEquals(t, nil, responseBody.CreatedAt, "responseBody.CreatedAt")
+	AssertNotEquals(t, 0, responseBody.CreatedAt, "responseBody.CreatedAt")
 }
 
-func TestFetchToDoList(t *testing.T) {
+func TestFetchNotebook(t *testing.T) {
 	ts := wireTestServer(t)
 	defer ts.Close()
 
-	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
-	response := ts.POST("/api/to-do-list", body)
+	response := ts.POST("/api/notebook", "")
+	var responseBody responseDto
+	err := response.Decode(&responseBody)
+	AssertEquals(t, nil, err, "PUT response.Decode error")
 
-	id := response.Body()["id"].(string)
-	parsedID, _ := uuid.Parse(id)
-
-	response = ts.GET("/api/to-do-list/" + parsedID.String())
+	response = ts.GET("/api/notebook/" + responseBody.ID.String())
 	AssertEquals(t, 200, response.StatusCode, "response.StatusCode")
+	err = response.Decode(&responseBody)
+	AssertEquals(t, nil, err, "GET response.Decode error")
 
-	title := response.Body()["title"]
-	AssertEquals(t, listTitle0, title, "title")
-
-	id = response.Body()["id"].(string)
-	parsedID1, err := uuid.Parse(id)
-	AssertEquals(t, nil, err, "uuid.Parse error")
-	AssertEquals(t, parsedID, parsedID1, "UUID")
+	AssertNotEquals(t, nil, responseBody.ID, "responseBody.ID")
+	AssertEquals(t, []interface{}{}, responseBody.ToDoLists.LiveSet, "responseBody.ToDoLists.Liveset")
+	AssertEquals(t, []interface{}{}, responseBody.ToDoLists.TombstoneSet, "responseBody.ToDoLists.TombstoneSet")
+	AssertNotEquals(t, nil, responseBody.CreatedAt, "responseBody.CreatedAt")
+	AssertNotEquals(t, 0, responseBody.CreatedAt, "responseBody.CreatedAt")
 }
 
-func TestUpdateToDoList(t *testing.T) {
+func TestUpdateNotebook(t *testing.T) {
 	ts := wireTestServer(t)
 	defer ts.Close()
 
-	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
-	response := ts.POST("/api/to-do-list", body)
+	response := ts.POST("/api/notebook", "")
+	var postResponseBody responseDto
+	err := response.Decode(&postResponseBody)
+	AssertEquals(t, nil, err, "POST response.Decode error")
 
-	id := response.Body()["id"].(string)
-	parsedID, _ := uuid.Parse(id)
-
-	body = fmt.Sprintf(`{
+	requestBody := fmt.Sprintf(`{
 		"id": "%s",
-		"title": "%s",
-		"liveSet": [
-			{
-				"id": "%s",
-				"title": "%s",
-				"checked": false,
-				"orderValue": 10.0
-			}
-		],
-		"tombstoneSet": []
-	}`, parsedID, listTitle0, parsedID, itemTitle0)
-
-	response = ts.PUT("/api/to-do-list", body)
+		"toDoLists": {
+			"liveSet": [
+				{
+					"id": "c8745289-c064-4759-815d-172261eaff8b",
+					"title": {
+						"value": "list0",
+						"updatedAt": 1590829861033038682
+					},
+					"toDoItems": {
+						"liveSet": [],
+						"tombstoneSet": []
+					},
+					"createdAt": 1590829861033039336
+				}
+			],
+			"tombstoneSet": []
+		},
+		"createdAt": %d 
+	}`, postResponseBody.ID.String(), postResponseBody.CreatedAt)
+	response = ts.PUT("/api/notebook", requestBody)
 	AssertEquals(t, 200, response.StatusCode, "response.StatusCode")
+	var putResponseBody responseDto
+	err = response.Decode(&putResponseBody)
+	AssertEquals(t, nil, err, "PUT response.Decode error")
 
-	title := response.Body()["title"]
-	AssertEquals(t, listTitle0, title, "title")
+	response = ts.GET("/api/notebook/" + postResponseBody.ID.String())
+	var getResponseBody responseDto
+	err = response.Decode(&getResponseBody)
+	AssertEquals(t, nil, err, "GET response.Decode error")
 
-	id = response.Body()["id"].(string)
-	parsedID1, err := uuid.Parse(id)
-	AssertEquals(t, nil, err, "uuid.Parse error")
-	AssertEquals(t, parsedID, parsedID1, "UUID")
-
-	itemTitle := response.Body()["liveSet"].([]interface{})[0].(map[string]interface{})["title"].(string)
-	AssertEquals(t, itemTitle0, itemTitle, "itemTitle")
+	AssertEquals(t, putResponseBody, getResponseBody, "getResponseBody")
+	AssertEquals(t, postResponseBody.ID, putResponseBody.ID, "putResponseBody.ID")
+	AssertEquals(t, 1, len(putResponseBody.ToDoLists.LiveSet), "len(responseBody.ToDoLists.Liveset)")
+	AssertEquals(t, []interface{}{}, putResponseBody.ToDoLists.TombstoneSet, "responseBody.ToDoLists.TombstoneSet")
 }
 
-func TestBulkUpdate(t *testing.T) {
+func TestRemoteNotebook(t *testing.T) {
 	ts := wireTestServer(t)
 	defer ts.Close()
 
-	body := fmt.Sprintf(`{"title":"%s"}`, listTitle0)
-	response := ts.POST("/api/to-do-list", body)
-
-	rawID := response.Body()["id"].(string)
-	id0, _ := uuid.Parse(rawID)
-	id1, _ := uuid.NewRandom()
-
-	body = fmt.Sprintf(`{
-		"toDoLists": [
-			{
-				"id": "%s",
-				"title": "%s",
-				"liveSet": [],
-				"tombstoneSet": []
-			},
-			{
-				"id": "%s",
-				"title": "%s",
-				"liveSet": [],
-				"tombstoneSet": []
-			}
-		]
-	}`, id0, listTitle1, id1, listTitle1)
-
-	response = ts.POST("/api/to-do-list/bulk", body)
-	AssertEquals(t, 200, response.StatusCode, "response.StatusCode")
-
-	type toDoListJSON struct {
-		ID    string `json:"id"`
-		Title string `json:"title"`
-	}
-
-	type responseJSON struct {
-		ToDoLists []toDoListJSON `json:"toDoLists"`
-	}
-
-	var responseBody responseJSON
+	response := ts.POST("/api/notebook", "")
+	var responseBody responseDto
 	err := response.Decode(&responseBody)
 	AssertEquals(t, nil, err, "response.Decode error")
 
-	expectedList0 := toDoListJSON{
-		ID:    id0.String(),
-		Title: listTitle1,
-	}
-	expectedList1 := toDoListJSON{
-		ID:    id1.String(),
-		Title: listTitle1,
-	}
+	response = ts.DELETE("/api/notebook/" + responseBody.ID.String())
+	AssertEquals(t, 204, response.StatusCode, "response.StatusCode")
 
-	untypedSlice := make([]interface{}, len(responseBody.ToDoLists))
-	for i := range responseBody.ToDoLists {
-		untypedSlice[i] = responseBody.ToDoLists[i]
-	}
-
-	AssertContains(t, expectedList0, untypedSlice, "responseBody.ToDoLists")
-	AssertContains(t, expectedList1, untypedSlice, "responseBody.ToDoLists")
+	response = ts.GET("/api/notebook/" + responseBody.ID.String())
+	AssertEquals(t, 404, response.StatusCode, "response.StatusCode")
 }
