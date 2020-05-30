@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/eldelto/solvent"
 	"github.com/eldelto/solvent/web/dto"
 	"github.com/eldelto/solvent/web/service"
 	"github.com/google/uuid"
@@ -25,11 +24,10 @@ func NewMainController(service *service.Service) MainController {
 
 func (c *MainController) RegisterRoutes(r *mux.Router) {
 	r.Handle("/api/health", baseMiddleWare(c.fetchHealth)).Methods("GET")
-	r.Handle("/api/to-do-list", baseMiddleWare(c.fetchToDoLists)).Methods("GET")
-	r.Handle("/api/to-do-list/{id}", baseMiddleWare(c.fetchToDoList)).Methods("GET")
-	r.Handle("/api/to-do-list", baseMiddleWare(c.createToDoList)).Methods("POST")
-	r.Handle("/api/to-do-list", baseMiddleWare(c.updateToDoList)).Methods("PUT")
-	r.Handle("/api/to-do-list/bulk", baseMiddleWare(c.pushToDoLists)).Methods("POST")
+	r.Handle("/api/notebook/{id}", baseMiddleWare(c.fetchNotebook)).Methods("GET")
+	r.Handle("/api/notebook", baseMiddleWare(c.createNotebook)).Methods("POST")
+	r.Handle("/api/notebook", baseMiddleWare(c.updateNotebook)).Methods("PUT")
+	r.Handle("/api/notebook/{id}", baseMiddleWare(c.removeNotebook)).Methods("DELETE")
 }
 
 func (c *MainController) fetchHealth(w http.ResponseWriter, r *http.Request) {
@@ -37,23 +35,20 @@ func (c *MainController) fetchHealth(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status": "ok"}`))
 }
 
-func (c *MainController) fetchToDoLists(w http.ResponseWriter, r *http.Request) {
-	toDoLists := c.service.FetchAll()
-
-	dtos := make([]dto.ToDoListDto, len(toDoLists))
-	for i, toDoList := range toDoLists {
-		dtos[i] = dto.ToDoListToDto(&toDoList)
+func (c *MainController) createNotebook(w http.ResponseWriter, r *http.Request) {
+	notebook, err := c.service.Create()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	type response struct {
-		ToDoLists []dto.ToDoListDto `json:"toDoLists"`
-	}
-	responseBody := response{ToDoLists: dtos}
+	dto := dto.NotebookToDto(notebook)
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(responseBody)
+	json.NewEncoder(w).Encode(dto)
 }
 
-func (c *MainController) fetchToDoList(w http.ResponseWriter, r *http.Request) {
+func (c *MainController) fetchNotebook(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	uuid, err := uuid.Parse(id)
 	if err != nil {
@@ -61,104 +56,55 @@ func (c *MainController) fetchToDoList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	list, err := c.service.Fetch(uuid)
+	notebook, err := c.service.Fetch(uuid)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	dto := dto.ToDoListToDto(list)
+	dto := dto.NotebookToDto(notebook)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(dto)
 }
 
-func (c *MainController) createToDoList(w http.ResponseWriter, r *http.Request) {
+func (c *MainController) updateNotebook(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	// TODO: Benchmark if returning a closure over the type is faster than creating it
-	type request struct {
-		Title string
-	}
-
-	var requestBody request
-	err := decoder.Decode(&requestBody)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	list, err := c.service.Create(requestBody.Title)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	dto := dto.ToDoListToDto(list)
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(dto)
-}
-
-func (c *MainController) updateToDoList(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
-
-	var request dto.ToDoListDto
+	var request dto.NotebookDto
 	err := decoder.Decode(&request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	newList := dto.ToDoListFromDto(&request)
+	newNotebook := dto.NotebookFromDto(&request)
 
-	mergedList, err := c.service.Update(&newList)
+	mergedNotebook, err := c.service.Update(newNotebook)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	dto := dto.ToDoListToDto(mergedList)
+	dto := dto.NotebookToDto(mergedNotebook)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(dto)
 }
 
-func (c *MainController) pushToDoLists(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
-
-	type request struct {
-		ToDoLists []dto.ToDoListDto
-	}
-	var requestBody request
-	err := decoder.Decode(&requestBody)
+func (c *MainController) removeNotebook(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	uuid, err := uuid.Parse(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	toDoLists := make([]solvent.ToDoList, len(requestBody.ToDoLists))
-	for i, toDoListDto := range requestBody.ToDoLists {
-		toDoLists[i] = dto.ToDoListFromDto(&toDoListDto)
-	}
-
-	mergedList, err := c.service.BulkUpdate(toDoLists)
+	err = c.service.Remove(uuid)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	dtos := make([]dto.ToDoListDto, len(mergedList))
-	for i, toDoList := range toDoLists {
-		dtos[i] = dto.ToDoListToDto(&toDoList)
-	}
-
-	type response struct {
-		ToDoLists []dto.ToDoListDto
-	}
-	responseBody := response{ToDoLists: dtos}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(responseBody)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func baseMiddleWare(nextFunc http.HandlerFunc) http.Handler {

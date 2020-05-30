@@ -81,6 +81,7 @@ func (p *PSet) Merge(other Mergeable) (Mergeable, error) {
 	mergedPSet := PSet{
 		LiveSet:      mergedLiveSet,
 		TombstoneSet: mergedTombstoneSet,
+		identifier: p.identifier,
 	}
 	return &mergedPSet, nil
 }

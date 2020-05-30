@@ -5,9 +5,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/eldelto/solvent"
 	"github.com/eldelto/solvent/web/controller"
 	"github.com/eldelto/solvent/web/persistence"
 	serv "github.com/eldelto/solvent/web/service"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -24,10 +26,14 @@ func main() {
 	port := 8080
 
 	// TODO: Remove afterwards
-	list0, _ := service.Create("List0")
-	list0.AddItem("Item0")
-	service.Update(list0)
-	service.Create("List1")
+	notebook, _ := solvent.NewNotebook()
+	notebook.ID = uuid.Nil
+
+	list, _ := notebook.AddList("List0")
+	list.AddItem("Item0")
+	list.AddItem("Item1")
+
+	repository.Store(notebook)
 
 	r := mux.NewRouter()
 	mainController.RegisterRoutes(r)

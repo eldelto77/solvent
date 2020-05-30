@@ -6,11 +6,10 @@ import (
 )
 
 type Repository interface {
-	Store(list *solvent.ToDoList) error
-	Update(list *solvent.ToDoList) error
-	Fetch(id uuid.UUID) (*solvent.ToDoList, error)
-	FetchAll() []solvent.ToDoList
-	BulkUpdate(lists []solvent.ToDoList) error
+	Store(notbook *solvent.Notebook) error
+	Update(notebook *solvent.Notebook) error
+	Fetch(id uuid.UUID) (*solvent.Notebook, error)
+	Remove(id uuid.UUID) error
 }
 
 type Service struct {
@@ -24,71 +23,44 @@ func NewService(repository Repository) Service {
 }
 
 // TODO: Wrap returned errors with custom ones
-func (s *Service) Create(title string) (*solvent.ToDoList, error) {
-	list, err := solvent.NewToDoList(title)
+func (s *Service) Create() (*solvent.Notebook, error) {
+	notebook, err := solvent.NewNotebook()
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.repository.Store(&list)
+	err = s.repository.Store(notebook)
 	if err != nil {
 		return nil, err
 	}
 
-	return &list, nil
+	return notebook, nil
 }
 
-func (s *Service) Fetch(id uuid.UUID) (*solvent.ToDoList, error) {
+func (s *Service) Fetch(id uuid.UUID) (*solvent.Notebook, error) {
 	return s.repository.Fetch(id)
 }
 
-func (s *Service) FetchAll() []solvent.ToDoList {
-	return s.repository.FetchAll()
+func (s *Service) Update(notebook *solvent.Notebook) (*solvent.Notebook, error) {
+	oldNotebook, err := s.Fetch(notebook.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	merged, err := oldNotebook.Merge(notebook)
+	if err != nil {
+		return nil, err
+	}
+	mergedNotebook := merged.(*solvent.Notebook)
+
+	err = s.repository.Update(mergedNotebook)
+	if err != nil {
+		return nil, err
+	}
+
+	return mergedNotebook, nil
 }
 
-func (s *Service) Update(list *solvent.ToDoList) (*solvent.ToDoList, error) {
-	oldList, err := s.Fetch(list.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	merged, err := list.Merge(oldList)
-	if err != nil {
-		return nil, err
-	}
-	mergedList := merged.(*solvent.ToDoList)
-
-	err = s.repository.Update(mergedList)
-	if err != nil {
-		return nil, err
-	}
-
-	return mergedList, nil
+func (s *Service) Remove(id uuid.UUID) error {
+	return s.repository.Remove(id)
 }
-
-func (s *Service) BulkUpdate(lists []solvent.ToDoList) ([]solvent.ToDoList, error) {
-	updateList := make([]solvent.ToDoList, len(lists))
-	for i, toDoList := range lists {
-		oldList, err := s.Fetch(toDoList.ID)
-
-		if err == nil {
-			merged, err := toDoList.Merge(oldList)
-			if err != nil {
-				return nil, err
-			}
-			mergedList := merged.(*solvent.ToDoList)
-			updateList[i] = *mergedList
-		} else {
-			updateList[i] = toDoList
-		}
-	}
-
-	err := s.repository.BulkUpdate(updateList)
-	if err != nil {
-		return nil, err
-	}
-
-	return updateList, nil
-}
-
-// TODO: Handle archived ToDoLists

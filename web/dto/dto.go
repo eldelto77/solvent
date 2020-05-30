@@ -87,14 +87,11 @@ func toDoItemPSetToDto(set solvent.ToDoItemPSet) ToDoItemPSetDto {
 }
 
 func toDoItemPSetFromDto(set ToDoItemPSetDto) solvent.ToDoItemPSet {
-	pset := crdt.PSet{
-		LiveSet:      itemMapFromToDoItemDtos(set.LiveSet),
-		TombstoneSet: itemMapFromToDoItemDtos(set.TombstoneSet),
-	}
+	toDoItemPSet := solvent.NewToDoItemPSet()
+	toDoItemPSet.LiveSet = itemMapFromToDoItemDtos(set.LiveSet)
+	toDoItemPSet.TombstoneSet = itemMapFromToDoItemDtos(set.TombstoneSet)
 
-	return solvent.ToDoItemPSet{
-		PSet: pset,
-	}
+	return toDoItemPSet
 }
 
 func itemMapToToDoItemDtos(itemMap crdt.ItemMap) []ToDoItemDto {
@@ -123,12 +120,11 @@ type ToDoListDto struct {
 	ID        uuid.UUID       `json:"id"`
 	Title     TitleDto        `json:"title"`
 	ToDoItems ToDoItemPSetDto `json:"toDoItems"`
-	UpdatedAt int64           `json:"updatedAt"`
 	CreatedAt int64           `json:"createdAt"`
 }
 
 // ToDoListToDto converts a ToDoList to its DTO representation
-func ToDoListToDto(list *solvent.ToDoList) ToDoListDto {
+func toDoListToDto(list *solvent.ToDoList) ToDoListDto {
 	return ToDoListDto{
 		ID:        list.ID,
 		Title:     titleToDto(list.Title),
@@ -138,11 +134,74 @@ func ToDoListToDto(list *solvent.ToDoList) ToDoListDto {
 }
 
 // ToDoListFromDto converts a DTO representation to an actual ToDoList
-func ToDoListFromDto(list *ToDoListDto) solvent.ToDoList {
+func toDoListFromDto(list *ToDoListDto) solvent.ToDoList {
 	return solvent.ToDoList{
 		ID:        list.ID,
 		Title:     titleFromDto(list.Title),
 		ToDoItems: toDoItemPSetFromDto(list.ToDoItems),
 		CreatedAt: list.CreatedAt,
+	}
+}
+
+type ToDoListPSetDto struct {
+	LiveSet      []ToDoListDto `json:"liveSet"`
+	TombstoneSet []ToDoListDto `json:"tombstoneSet"`
+}
+
+func toDoListPSetToDto(set solvent.ToDoListPSet) ToDoListPSetDto {
+	return ToDoListPSetDto{
+		LiveSet:      itemMapToToDoListDtos(set.LiveSet),
+		TombstoneSet: itemMapToToDoListDtos(set.TombstoneSet),
+	}
+}
+
+func toDoListPSetFromDto(set ToDoListPSetDto) solvent.ToDoListPSet {
+	toDoListPSet := solvent.NewToDoListPSet()
+	toDoListPSet.LiveSet = itemMapFromToDoListDtos(set.LiveSet)
+	toDoListPSet.TombstoneSet = itemMapFromToDoListDtos(set.TombstoneSet)
+
+	return toDoListPSet
+}
+
+func itemMapToToDoListDtos(listMap crdt.ItemMap) []ToDoListDto {
+	dtos := make([]ToDoListDto, 0, len(listMap))
+	for _, value := range listMap {
+		toDoList := value.(*solvent.ToDoList)
+		dtos = append(dtos, toDoListToDto(toDoList))
+	}
+
+	return dtos
+}
+
+func itemMapFromToDoListDtos(dtos []ToDoListDto) crdt.ItemMap {
+	listMap := make(crdt.ItemMap, len(dtos))
+	for _, dto := range dtos {
+		toDoList := toDoListFromDto(&dto)
+		key := toDoList.Identifier()
+		listMap[key] = &toDoList
+	}
+
+	return listMap
+}
+
+type NotebookDto struct {
+	ID        uuid.UUID       `json:"id"`
+	ToDoLists ToDoListPSetDto `json:"toDoLists"`
+	CreatedAt int64
+}
+
+func NotebookToDto(notebook *solvent.Notebook) NotebookDto {
+	return NotebookDto{
+		ID:        notebook.ID,
+		ToDoLists: toDoListPSetToDto(notebook.ToDoLists),
+		CreatedAt: notebook.CreatedAt,
+	}
+}
+
+func NotebookFromDto(notebook *NotebookDto) *solvent.Notebook {
+	return &solvent.Notebook{
+		ID:        notebook.ID,
+		ToDoLists: toDoListPSetFromDto(notebook.ToDoLists),
+		CreatedAt: notebook.CreatedAt,
 	}
 }
