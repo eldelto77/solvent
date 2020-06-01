@@ -29,7 +29,7 @@ export default class Notebook {
   }
 
   getList(id) {
-    this.toDoLists.liveView().get(id);
+    return this.toDoLists.liveView().get(id);
   }
 
   getLists() {
@@ -48,7 +48,7 @@ export default class Notebook {
       throw "Notebooks with different IDs cannot be merged";
     }
 
-    const mergedToDoLists = this.todoLists.merge(other.toDoLists);
+    const mergedToDoLists = this.toDoLists.merge(other.toDoLists);
 
     const mergedNotebook = new Notebook(this.id, mergedToDoLists, this.createdAt);
     return mergedNotebook;

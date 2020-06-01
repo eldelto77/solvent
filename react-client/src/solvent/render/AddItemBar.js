@@ -6,7 +6,7 @@ import { ReactComponent as PlusCircle } from '../../icons/plus-circle.svg'
 export default function AddItemBar(props) {
   return (
     <form className="AddItemBar" onSubmit={props.onSubmit}>
-      <button className="AddItemBarLogo" disabled="true">+</button>
+      <button className="AddItemBarLogo" type="button" disabled="true">+</button>
       <input
         className="AddItemBarTitle"
         type="text"

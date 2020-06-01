@@ -29,7 +29,7 @@ func main() {
 	notebook, _ := solvent.NewNotebook()
 	notebook.ID = uuid.Nil
 
-	list, _ := notebook.AddList("List0")
+	list, _ := notebook.AddList("My Server Side List")
 	list.AddItem("Item0")
 	list.AddItem("Item1")
 

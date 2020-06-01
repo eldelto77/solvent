@@ -80,7 +80,6 @@ function toDoListFromDto(dto) {
     dto.id,
     titleFromDto(dto.title),
     toDoItemPSetFromDto(dto.toDoItems),
-    dto.updatedAt,
     dto.createdAt
   );
 }

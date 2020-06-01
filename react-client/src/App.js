@@ -4,32 +4,23 @@ import './App.css';
 import DetailView from './solvent/render/DetailView'
 import ListView from './solvent/render/ListView'
 
-import Notebook from './solvent/Notebook'
-
+import {notebookFromDto, notebookToDto} from './solvent/Dto'
 
 class App extends React.Component {
 
   constructor(props) {
     super(props);
 
-    const notebook0 = Notebook.new();
-    const list = notebook0.addList("My List");
-    list.addItem("Item0");
-    list.addItem("Item1");
-    list.addItem("Item2");
-
-    console.log(notebook0)
-
     this.state = {
-      notebook: notebook0,
+      notebook: null,
       activeToDoList: null,
       isListViewActive: true
     }
   }
 
   componentDidMount() {
-    //this.syncState();
-    //this.timer = setInterval(() => this.syncState(), 1000);
+    this.syncState();
+    this.timer = setInterval(() => this.syncState(), 1000);
   }
 
   componentWillUnmount() {
@@ -37,52 +28,56 @@ class App extends React.Component {
     this.timer = null;
   }
 
-  /*syncState = async () => {
-    await this.pushState(this.state.toDoLists);
-    const newToDoLists = await this.fetchState();
-
-    const oldToDoListMap = new Map();
-    this.state.toDoLists.forEach(list => oldToDoListMap.set(list.id, list));
-
-    const mergedToDoLists = [];
-    newToDoLists.forEach(newToDoList => {
-      if (oldToDoListMap.has(newToDoList.id)) {
-        const oldToDoList = oldToDoListMap.get(newToDoList.id);
-        const mergedToDoList = oldToDoList.merge(newToDoList);
-        mergedToDoLists.push(mergedToDoList);
-      } else {
-        mergedToDoLists.push(newToDoList);
-      }
-    });
-
-    this.setState({ toDoLists: mergedToDoLists });
-
-    if (this.state.activeToDoList) {
-      const activeToDoList = mergedToDoLists.find(list => list.id === this.state.activeToDoList.id);
-      if (activeToDoList) {
-        this.setState({ activeToDoList: activeToDoList });
+  updateNotebook = f => {
+    const notebook = this.state.notebook;
+    const newNotebook = f(notebook);
+    this.setState({notebook: newNotebook});
+    
+    const activeToDoList = this.state.activeToDoList;
+    if(activeToDoList) {
+      const newActiveToDoList = notebook.getList(activeToDoList.id);
+      if(newActiveToDoList) {
+        const mergedActiveToDoList = activeToDoList.merge(newActiveToDoList);
+        this.setState({activeToDoList: mergedActiveToDoList});
       }
     }
   }
 
-  pushState = async toDoLists => {
-    const dtos = toDoLists.map(toDoListToDto);
-    const requestBody = {
-      toDoLists: dtos
-    }
+  updateActiveList = f => {
+    this.updateNotebook(notebook => {
+      const activeList = notebook.getList(this.state.activeToDoList.id);
+      f(activeList);
+      return notebook; 
+    })
+  }
 
-    return fetch("api/to-do-list/bulk", {
-      method: "POST",
+  syncState = async () => {
+    if (this.state.notebook) {
+      const newNotebook = await this.pushState(this.state.notebook);
+      this.updateNotebook(notebook => notebook.merge(newNotebook));
+    } else {
+      const newNotebook = await this.fetchState();
+      this.setState({notebook: newNotebook});
+    }
+  }
+
+  pushState = async notebook => {
+    const dto = notebookToDto(notebook);
+    const response = await fetch("api/notebook", {
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(dto)
     });
+    const responseBody = await response.json();
+    return notebookFromDto(responseBody);
   }
 
   fetchState = async () => {
-    const response = await fetch("api/to-do-list");
+    // TODO: Fetch for real user
+    const response = await fetch("api/notebook/00000000-0000-0000-0000-000000000000");
     const responseBody = await response.json();
-    return responseBody.toDoLists.map(toDoListFromDto);
-  }*/
+    return notebookFromDto(responseBody);
+  }
 
   backToDetailView = () => {
     return this.setState({ isListViewActive: false });
@@ -109,37 +104,31 @@ class App extends React.Component {
   }
 
   renameList = title => {
-    this.state.activeToDoList.rename(title);
-    this.setState({ activeToDoList: this.state.activeToDoList });
+    this.updateActiveList(list => list.rename(title));
   }
 
   checkItem = item => {
     if (item.checked) {
-      this.state.activeToDoList.uncheckItem(item.id);
+      this.updateActiveList(list => list.unCheckItem(item.id));
     } else {
-      this.state.activeToDoList.checkItem(item.id);
+      this.updateActiveList(list => list.checkItem(item.id));
     }
-    this.setState({ activeToDoList: this.state.activeToDoList });
   }
 
   addItem = title => {
-    this.state.activeToDoList.addItem(title);
-    this.setState({ activeToDoList: this.state.activeToDoList });
+    this.updateActiveList(list => list.addItem(title));
   }
 
   removeItem = item => {
-    this.state.activeToDoList.removeItem(item.id);
-    this.setState({ activeToDoList: this.state.activeToDoList });
+    this.updateActiveList(list => list.removeItem(item.id));
   }
 
   moveItem = (id, targetIndex) => {
-    this.state.activeToDoList.moveItem(id, targetIndex);
-    this.setState({ activeToDoList: this.state.activeToDoList });
+    this.updateActiveList(list => list.moveItem(id, targetIndex));
   }
 
   renameItem = (item, title) => {
-    this.state.activeToDoList.renameItem(item.id, title);
-    this.setState({ activeToDoList: this.state.activeToDoList });
+    this.updateActiveList(list => list.renameItem(item.id, title));
   }
 
   render() {
@@ -157,7 +146,7 @@ class App extends React.Component {
         />
 
         <ListView
-          toDoLists={this.state.notebook.getLists()}
+          toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
           selectList={this.selectList}
           addList={this.addList}
           onBack={this.backToDetailView}

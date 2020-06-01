@@ -3,7 +3,7 @@ export default class PSet {
   constructor(liveSet, tombstoneSet, identifier) {
     this.liveSet = liveSet;
     this.tombstoneSet = tombstoneSet;
-    this.identifier = identifier;
+    this.id = identifier;
   }
 
   static new(identifier) {
@@ -37,18 +37,18 @@ export default class PSet {
   }
 
   identifier() {
-    return this.identifier;
+    return this.id;
   }
 
   merge (other) {
-    if (this.identifier() !== other.Identifier()) {
-      throw "Items with different identifiers cannot be merged";
+    if (this.identifier() !== other.identifier()) {
+      throw "Cannot merge item with ID '" + this.id + "' and item with ID '" + other.identifier() + "'";
     }
 
     const mergedLiveSet = mergeItemMaps(this.liveSet, other.liveSet);
     const mergedTombstoneSet = mergeItemMaps(this.tombstoneSet, other.tombstoneSet);
 
-    const mergedPSet = new PSet(mergedLiveSet, mergedTombstoneSet, this.identifier);
+    const mergedPSet = new PSet(mergedLiveSet, mergedTombstoneSet, this.identifier());
     return mergedPSet;
   }
 }
