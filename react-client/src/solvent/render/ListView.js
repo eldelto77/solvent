@@ -42,7 +42,7 @@ function ListViewMain(props) {
 function ToDoList(props) {
   return (
     <button className="ListViewToDoList" onClick={() => props.onClick(props.toDoList)}>
-      {props.toDoList.title}
+      {props.toDoList.title.value}
     </button>
   );
 }

@@ -324,7 +324,6 @@ func (n *Notebook) AddList(title string) (*ToDoList, error) {
 }
 
 func (n *Notebook) RemoveList(id uuid.UUID) {
-	// TODO: Move existance check to PSet?
 	list, err := n.GetList(id)
 	if err == nil {
 		n.ToDoLists.Remove(list)

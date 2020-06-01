@@ -10,7 +10,7 @@ export default class RToDoList extends React.Component {
 
     this.state = {
       editing: false,
-      newTitle: "",
+      newTitle: this.props.toDoList.title.value,
       newItemTitle: ""
     }
   }
@@ -18,7 +18,7 @@ export default class RToDoList extends React.Component {
   startTitleEditing = () => {
     this.setState({
       editing: true,
-      newTitle: this.props.toDoList.title
+      newTitle: this.props.toDoList.title.value
     });
   }
 
@@ -30,7 +30,7 @@ export default class RToDoList extends React.Component {
     this.props.renameList(this.state.newTitle);
     this.setState({
       editing: false,
-      newTitle: ""
+      newTitle: this.props.toDoList.title.value
     });
   }
 
@@ -65,7 +65,7 @@ export default class RToDoList extends React.Component {
         <input
           className="ToDoListTitle"
           type="text"
-          value={this.state.editing ? this.state.newTitle : this.props.toDoList.title}
+          value={this.state.editing ? this.state.newTitle : this.props.toDoList.title.value}
           placeholder="Title"
           onFocus={this.startTitleEditing}
           onChange={this.editListTitle}

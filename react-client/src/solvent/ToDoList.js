@@ -1,82 +1,85 @@
 import ToDoItem from './ToDoItem'
+import { OrderValue } from './ToDoItem'
 import { v4 as uuid } from 'uuid'
+import PSet from './PSet'
 
-class ToDoList {
+export default class ToDoList {
 
-  constructor(id, title, liveSet, tombstoneSet, updatedAt, createdAt) {
+  constructor(id, title, toDoItems, createdAt) {
     this.id = id;
     this.title = title;
-    this.liveSet = liveSet;
-    this.tombstoneSet = tombstoneSet;
-    this.updatedAt = updatedAt;
+    this.toDoItems = toDoItems;
     this.createdAt = createdAt;
   }
 
   static new(title) {
-    return new ToDoList(uuid(), title, new Map(), new Map(), currentNanos(), currentNanos());
+    const titleClass = new Title(title, currentNanos());
+    return new ToDoList(uuid(), titleClass, PSet.new("ToDoItemPSet"), currentNanos());
   }
 
   get items() {
     const items = [];
-    this.liveView().forEach((item, _) => items.push(item));
+    this.toDoItems.liveView().forEach((item, _) => items.push(item));
 
     return items;
   }
 
   addItem(title) {
     const id = uuid();
-    const item = new ToDoItem(id, title, false, this.nextOrderValue(), currentNanos());
-    this.liveSet.set(id, item);
+    const orderValue = new OrderValue(this.nextOrderValue(), currentNanos());
+    const item = new ToDoItem(id, title, false, orderValue);
+    this.toDoItems.add(item);
 
     return id;
   }
 
   getItem(id) {
-    return this.liveView().get(id);
+    return this.toDoItems.liveView().get(id);
   }
 
   removeItem(id) {
-    const items = this.liveView();
-    if (items.has(id)) {
-      const item = items.get(id);
-      this.tombstoneSet.set(id, item);
+    const item = this.getItem(id);
+    if (item) {
+      this.toDoItems.remove(item);
     }
   }
 
   checkItem(id) {
     const item = this.getItem(id);
-    item.checked = true
+    item.checked = true;
 
     return id;
   }
 
   uncheckItem(id) {
     const item = this.getItem(id);
-    this.tombstoneSet.set(id, item);
+    this.removeItem(id);
+
     const newId = uuid();
-    const newItem = new ToDoItem(newId, item.title, false, item.orderValue, item.updatedAt);
-    this.liveSet.set(newId, newItem)
+    const newItem = new ToDoItem(newId, item.title, false, item.orderValue);
+    this.toDoItems.add(newItem);
 
     return newId;
   }
 
   moveItem(id, targetIndex) {
     const item = this.getItem(id);
-    const items = this.items.sort((a, b) => a.orderValue - b.orderValue);
+    const items = this.items.sort((a, b) => a.orderValue.value - b.orderValue.value);
 
-    const orderValueMid = items[targetIndex].orderValue;
+    const itemOrderValue = item.orderValue.value;
+    const orderValueMid = items[targetIndex].orderValue.value;
     let orderValueAdjacent;
-    if (orderValueMid < item.orderValue) {
+    if (orderValueMid < itemOrderValue) {
       // Movint item up
       if ((targetIndex - 1) >= 0) {
-        orderValueAdjacent = items[targetIndex - 1].orderValue;
+        orderValueAdjacent = items[targetIndex - 1].orderValue.value;
       } else {
         orderValueAdjacent = 0.0;
       }
-    } else if (orderValueMid > item.orderValue) {
+    } else if (orderValueMid > itemOrderValue) {
       // Movint item down
       if ((targetIndex + 1) < items.length) {
-        orderValueAdjacent = items[targetIndex + 1].orderValue;
+        orderValueAdjacent = items[targetIndex + 1].orderValue.value;
       } else {
         orderValueAdjacent = this.nextOrderValue();
       }
@@ -84,10 +87,9 @@ class ToDoList {
       return;
     }
 
-    const newOrderValue = (orderValueMid + orderValueAdjacent) / 2.0;
+    const newOrderValue = new OrderValue((orderValueMid + orderValueAdjacent) / 2.0, currentNanos());
     item.orderValue = newOrderValue;
-    item.updatedAt = currentNanos();
-    this.liveSet.set(item.id, item);
+    this.toDoItems.add(item);
 
     return item.id;
   }
@@ -100,62 +102,37 @@ class ToDoList {
     const newItem = this.getItem(newId);
     newItem.orderValue = oldItem.orderValue;
     newItem.updatedAt = oldItem.updatedAt;
-    this.liveSet.set(newItem.id, newItem);
+    this.toDoItems.add(newItem);
 
     return newId;
   }
 
   rename(title) {
-    this.title = title;
-    this.updatedAt = currentNanos();
+    const newTitle = new Title(title, currentNanos());
+    this.title = newTitle;
     return this;
   }
 
+  identifier() {
+    return this.id;
+  }
+
   merge(other) {
-    let title = this.title;
-    let updatedAt = this.updatedAt;
-    if (other.updatedAt > this.updatedAt) {
-      title = other.title;
-      updatedAt = other.updatedAt;
+    let mergedTitle = this.title;
+    if (other.title.updatedAt > this.title.updatedAt) {
+      mergedTitle = other.title;
     }
 
-    const mergedLiveSet = this.mergeMaps(this.liveSet, other.liveSet);
-    const mergedTombstoneSet = this.mergeMaps(this.tombstoneSet, other.tombstoneSet);
+    const mergedtoDoItems = this.toDoItems.merge(other.toDoItems);
 
-    return new ToDoList(this.id, title, mergedLiveSet, mergedTombstoneSet, updatedAt, this.createdAt);
-  }
-
-  mergeMaps(thisMap, otherMap) {
-    const mergedMap = new Map();
-    thisMap.forEach((item, id) => mergedMap.set(id, item));
-    otherMap.forEach((item, id) => {
-      if (mergedMap.has(id)) {
-        const mergedItem = mergedMap.get(id).merge(item);
-        mergedMap.set(id, mergedItem);
-      } else {
-        mergedMap.set(id, item);
-      }
-    });
-
-    return mergedMap;
-  }
-
-  liveView() {
-    const liveView = new Map();
-    this.liveSet.forEach((item, id) => {
-      if (!this.tombstoneSet.has(id)) {
-        liveView.set(id, item);
-      }
-    })
-
-    return liveView;
+    return new ToDoList(this.id, mergedTitle, mergedtoDoItems, this.createdAt);
   }
 
   nextOrderValue() {
     let orderValue = 0.0;
-    this.liveView().forEach((item, _) => {
-      if (item.orderValue > orderValue) {
-        orderValue = item.orderValue;
+    this.toDoItems.liveView().forEach((item, _) => {
+      if (item.orderValue.value > orderValue) {
+        orderValue = item.orderValue.value;
       }
     });
 
@@ -167,4 +144,10 @@ function currentNanos() {
   return Date.now() * 1000000;
 }
 
-export default ToDoList;
+export class Title {
+
+  constructor(value, updatedAt) {
+    this.value = value;
+    this.updatedAt = updatedAt;
+  }
+}

@@ -33,7 +33,7 @@ func (p *PSet) Add(item Mergeable) error {
 func (p *PSet) Remove(item Mergeable) {
 	key := item.Identifier()
 
-	if _, ok := p.LiveSet[key]; !ok {
+	if _, ok := p.LiveView()[key]; !ok {
 		return
 	}
 

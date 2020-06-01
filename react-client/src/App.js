@@ -4,25 +4,32 @@ import './App.css';
 import DetailView from './solvent/render/DetailView'
 import ListView from './solvent/render/ListView'
 
-import ToDoList from './solvent/ToDoList'
+import Notebook from './solvent/Notebook'
 
-import { toDoListFromDto, toDoListToDto } from './solvent/Dto'
 
 class App extends React.Component {
 
   constructor(props) {
     super(props);
 
+    const notebook0 = Notebook.new();
+    const list = notebook0.addList("My List");
+    list.addItem("Item0");
+    list.addItem("Item1");
+    list.addItem("Item2");
+
+    console.log(notebook0)
+
     this.state = {
-      toDoLists: [],
+      notebook: notebook0,
       activeToDoList: null,
       isListViewActive: true
     }
   }
 
   componentDidMount() {
-    this.syncState();
-    this.timer = setInterval(() => this.syncState(), 1000);
+    //this.syncState();
+    //this.timer = setInterval(() => this.syncState(), 1000);
   }
 
   componentWillUnmount() {
@@ -30,7 +37,7 @@ class App extends React.Component {
     this.timer = null;
   }
 
-  syncState = async () => {
+  /*syncState = async () => {
     await this.pushState(this.state.toDoLists);
     const newToDoLists = await this.fetchState();
 
@@ -75,7 +82,7 @@ class App extends React.Component {
     const response = await fetch("api/to-do-list");
     const responseBody = await response.json();
     return responseBody.toDoLists.map(toDoListFromDto);
-  }
+  }*/
 
   backToDetailView = () => {
     return this.setState({ isListViewActive: false });
@@ -89,11 +96,10 @@ class App extends React.Component {
   }
 
   addList = () => {
-    const newList = ToDoList.new("");
-    this.state.toDoLists.push(newList);
+    const list = this.state.notebook.addList("")
     this.setState({
-      activeToDoList: newList,
-      toDoLists: this.state.toDoLists,
+      activeToDoList: list,
+      notebook: this.state.notebook,
       isListViewActive: false
     });
   }
@@ -151,7 +157,7 @@ class App extends React.Component {
         />
 
         <ListView
-          toDoLists={this.state.toDoLists}
+          toDoLists={this.state.notebook.getLists()}
           selectList={this.selectList}
           addList={this.addList}
           onBack={this.backToDetailView}

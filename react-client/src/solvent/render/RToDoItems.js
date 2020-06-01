@@ -9,7 +9,7 @@ export default function RToDoItems(props) {
       <Droppable droppableId="ToDoItemsDroppable">
         {provided => (
           <div className="ToDoItems" {...provided.droppableProps} ref={provided.innerRef}>
-            {props.items.sort((a, b) => a.orderValue - b.orderValue)
+            {props.items.sort((a, b) => a.orderValue.value - b.orderValue.value)
               .map((item, index) => (
                 <RToDoItem
                   key={item.id}

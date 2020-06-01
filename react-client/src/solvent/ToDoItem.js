@@ -1,25 +1,32 @@
-class ToDoItem {
+export default class ToDoItem {
 
-  constructor(id, title, checked, orderValue, updatedAt) {
+  constructor(id, title, checked, orderValue) {
     this.id = id;
     this.title = title;
     this.checked = checked;
     this.orderValue = orderValue;
-    this.updatedAt = updatedAt;
+  }
+
+  identifier() {
+    return this.id;
   }
 
   merge(other) {
     const checked = this.checked || other.checked
 
-    let orderValue = this.orderValue;
-    let updatedAt = this.updatedAt;
-    if (other.updatedAt > this.updatedAt) {
-      orderValue = other.orderValue;
-      updatedAt = other.updatedAt;
+    let mergedOrderValue = this.orderValue;
+    if (other.orderValue.updatedAt > this.orderValue.updatedAt) {
+      mergedOrderValue = other.orderValue;
     }
 
-    return new ToDoItem(this.id, this.title, checked, orderValue, updatedAt);
+    return new ToDoItem(this.id, this.title, checked, mergedOrderValue);
   }
 }
 
-export default ToDoItem;
+export class OrderValue {
+
+  constructor(value, updatedAt) {
+    this.value = value;
+    this.updatedAt = updatedAt;
+  }
+}
