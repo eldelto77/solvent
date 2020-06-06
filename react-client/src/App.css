@@ -33,6 +33,8 @@
 #root {
     width: 100%;
     height: 100%;
+    padding: none;
+    margin: none;
     position: relative;
     overflow: hidden;
 }
@@ -110,13 +112,11 @@ svg {
 .ListView {
   width: 100vw;
   height: 100vh;
-  overflow: scroll;
 }
 
 .DetailView {
   width: 100vw;
   height: 100vh;
-  overflow: scroll;
 }
 
 .DetailViewMain {

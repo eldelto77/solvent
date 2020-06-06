@@ -109,7 +109,7 @@ class App extends React.Component {
 
   checkItem = item => {
     if (item.checked) {
-      this.updateActiveList(list => list.unCheckItem(item.id));
+      this.updateActiveList(list => list.uncheckItem(item.id));
     } else {
       this.updateActiveList(list => list.checkItem(item.id));
     }
