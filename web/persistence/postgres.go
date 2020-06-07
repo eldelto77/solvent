@@ -16,7 +16,7 @@ type PostgresRepository struct {
 }
 
 func NewPostgresRepository() (*PostgresRepository, error) {
-	db, err := sql.Open("pgx", "postgres://solvent:solvent123@localhost:5432/solvent")
+	db, err := sql.Open("pgx", "postgres://solvent:solvent123@db:5432/solvent")
 	if err != nil {
 		return nil, err
 	}
