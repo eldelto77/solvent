@@ -1,0 +1,19 @@
+version: "3.3"
+services:
+  solvent:
+    image: solvent:latest
+    ports:
+      - 5000:8080
+    restart: always
+
+  db:
+    image: postgres
+    volumes:
+      - "./postgres/data:/var/lib/postgresql/data"
+    expose:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: solvent
+      POSTGRES_PASSWORD: solvent123
+

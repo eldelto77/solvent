@@ -18,11 +18,18 @@ type Controller interface {
 	RegisterRoutes(router *mux.Router)
 }
 
-var repository = persistence.NewInMemoryRepository()
-var service = serv.NewService(&repository)
+//var repository = persistence.NewInMemoryRepository()
+var repository, postgresRepositoryErr = persistence.NewPostgresRepository()
+
+var service = serv.NewService(repository)
 var mainController = controller.NewMainController(&service)
 
 func main() {
+	// TODO: Where to handle re-connection?
+	if postgresRepositoryErr != nil {
+		panic(postgresRepositoryErr)
+	}
+
 	port := 8080
 
 	// TODO: Remove afterwards

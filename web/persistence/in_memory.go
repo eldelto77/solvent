@@ -15,8 +15,8 @@ type InMemoryRepository struct {
 	mutex sync.Mutex
 }
 
-func NewInMemoryRepository() InMemoryRepository {
-	return InMemoryRepository{
+func NewInMemoryRepository() *InMemoryRepository {
+	return &InMemoryRepository{
 		store: NotebookStore{},
 		mutex: sync.Mutex{},
 	}
