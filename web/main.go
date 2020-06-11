@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/eldelto/solvent"
+	"github.com/eldelto/solvent/internal/conf"
 	"github.com/eldelto/solvent/web/controller"
 	"github.com/eldelto/solvent/web/persistence"
 	serv "github.com/eldelto/solvent/web/service"
@@ -18,8 +19,18 @@ type Controller interface {
 	RegisterRoutes(router *mux.Router)
 }
 
+var simCp = conf.NewFileConfigProvider("conf/sim.properties")
+var prodCp = conf.NewFileConfigProvider("conf/prod.properties")
+var secretsCp = conf.NewFileConfigProvider("secrets/prod.properties")
+var config = conf.NewChainConfigProvider([]conf.ConfigProvider{simCp, prodCp, secretsCp})
+
 //var repository = persistence.NewInMemoryRepository()
-var repository, postgresRepositoryErr = persistence.NewPostgresRepository()
+var repository, postgresRepositoryErr = persistence.NewPostgresRepository(
+	config.GetString("postgres.host"),
+	config.GetString("postgres.port"),
+	config.GetString("postgres.user"),
+	config.GetString("postgres.password"),
+)
 
 var service = serv.NewService(repository)
 var mainController = controller.NewMainController(&service)

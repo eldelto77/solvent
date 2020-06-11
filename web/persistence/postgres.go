@@ -15,8 +15,9 @@ type PostgresRepository struct {
 	db *sql.DB
 }
 
-func NewPostgresRepository() (*PostgresRepository, error) {
-	db, err := sql.Open("pgx", "postgres://solvent:solvent123@db:5432/solvent")
+func NewPostgresRepository(host, port, user, password string) (*PostgresRepository, error) {
+	connectUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/solvent", user, password, host, port)
+	db, err := sql.Open("pgx", connectUrl)
 	if err != nil {
 		return nil, err
 	}
