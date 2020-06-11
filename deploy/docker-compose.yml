@@ -4,8 +4,8 @@ services:
   solvent:
     image: solvent:latest
     volumes:
-      - "./conf:/app/conf:ro"
-      - "./secrets:/app/secrets:ro"
+      - "./conf:/app/web/conf:ro"
+      - "./secrets:/app/web/secrets:ro"
     ports:
       - 5000:8080
     restart: always

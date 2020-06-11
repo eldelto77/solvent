@@ -78,8 +78,6 @@ func NewFileConfigProvider(path string) *FileConfigProvider {
 	execDir := filepath.Dir(execPath)
 	realPath := filepath.Join(execDir, path)
 
-	fmt.Println("Real path: " + realPath)
-
 	return &FileConfigProvider{
 		path: realPath,
 	}
@@ -129,7 +127,6 @@ func initMapFromFile(path string) map[string]string {
 	store := map[string]string{}
 	file, err := os.Open(path)
 	if err != nil {
-		fmt.Println("Open error: " + err.Error())
 		return store
 	}
 	defer file.Close()
