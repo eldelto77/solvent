@@ -16,6 +16,14 @@ services:
       - "./postgres/data:/var/lib/postgresql/data"
     restart: always
     environment:
-      POSTGRES_USER: solvent
-      POSTGRES_PASSWORD: solvent123
+      POSTGRES_USER_FILE: /run/secrets/postgres-user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    secrets:
+      - postgres-user
+      - postgres-password
 
+secrets:
+  postgres-user:
+    file: ./secrets/postgres-user.txt
+  postgres-password:
+    file: ./secrets/postgres-password.txt
