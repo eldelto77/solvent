@@ -24,22 +24,22 @@ var prodCp = conf.NewFileConfigProvider("conf/prod.properties")
 var secretsCp = conf.NewFileConfigProvider("secrets/prod.properties")
 var config = conf.NewChainConfigProvider([]conf.ConfigProvider{simCp, prodCp, secretsCp})
 
-var repository = persistence.NewInMemoryRepository()
-/*var repository, postgresRepositoryErr = persistence.NewPostgresRepository(
+//var repository = persistence.NewInMemoryRepository()
+var repository, postgresRepositoryErr = persistence.NewPostgresRepository(
 	config.GetString("postgres.host"),
 	config.GetString("postgres.port"),
 	config.GetString("postgres.user"),
 	config.GetString("postgres.password"),
-)*/
+)
 
 var service = serv.NewService(repository)
 var mainController = controller.NewMainController(&service)
 
 func main() {
 	// TODO: Where to handle re-connection?
-	/*if postgresRepositoryErr != nil {
+	if postgresRepositoryErr != nil {
 		panic(postgresRepositoryErr)
-	}*/
+	}
 
 	port := 8080
 
