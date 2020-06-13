@@ -431,7 +431,7 @@ func (e *NotFoundError) Error() string {
 	return e.message
 }
 
-// UnknownError indicates an unhandled error from another library tha
+// UnknownError indicates an unhandled error from another library that
 // gets wrapped
 type UnknownError struct {
 	err     error

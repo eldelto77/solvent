@@ -48,24 +48,37 @@ func NewTypeConversionError(key, value, typ string) *TypeConversionError {
 	}
 }
 
+func (e *TypeConversionError) Error() string {
+	return e.message
+}
+
 type ParsingError struct {
+	Line    string
+	message string
+}
+
+func NewParsingError(line string) *ParsingError {
+	return &ParsingError{
+		Line:    line,
+		message: fmt.Sprintf("could not parse line '%s'", line),
+	}
+}
+
+func (e *ParsingError) Error() string {
+	return e.message
+}
+
+type UnknownError struct {
 	err     error
 	message string
 }
 
-func NewParsingError(err error) *ParsingError {
-	return &ParsingError{
-		err:     err,
-		message: fmt.Sprintf("error while parsing config source: %s", err.Error()),
-	}
-}
-
-func (e *ParsingError) Unwrap() error {
-	return e.err
-}
-
-func (e *TypeConversionError) Error() string {
+func (e *UnknownError) Error() string {
 	return e.message
+}
+
+func (e *UnknownError) Unwrap() error {
+	return e.err
 }
 
 type FileConfigProvider struct {
@@ -85,7 +98,11 @@ func NewFileConfigProvider(path string) *FileConfigProvider {
 
 func (cp *FileConfigProvider) GetString(key string) (string, error) {
 	if cp.store == nil {
-		cp.store = initMapFromFile(cp.path)
+		m, err := initMapFromFile(cp.path)
+		if err != nil {
+			return "", err
+		}
+		cp.store = m
 	}
 
 	value, ok := cp.store[key]
@@ -123,11 +140,11 @@ func (cp *FileConfigProvider) GetBool(key string) (bool, error) {
 	return value, nil
 }
 
-func initMapFromFile(path string) map[string]string {
+func initMapFromFile(path string) (map[string]string, error) {
 	store := map[string]string{}
 	file, err := os.Open(path)
 	if err != nil {
-		return store
+		return store, nil
 	}
 	defer file.Close()
 
@@ -136,18 +153,21 @@ func initMapFromFile(path string) map[string]string {
 		line := scanner.Text()
 		tokens := strings.Split(line, "=")
 		if len(tokens) != 2 {
-			// TODO: Use real error type
-			panic("ParseError")
+			return nil, NewParsingError(line)
 		}
 
 		store[tokens[0]] = tokens[1]
 	}
 
 	if err := scanner.Err(); err != nil {
-		panic("ReadError")
+		err = &UnknownError{
+			err:     err,
+			message: fmt.Sprintf("could not read from file with path '%s'", path),
+		}
+		return nil, err
 	}
 
-	return store
+	return store, nil
 }
 
 type ChainConfigProvider struct {
