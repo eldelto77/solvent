@@ -6,8 +6,11 @@ import (
 	"fmt"
 
 	"github.com/eldelto/solvent"
+	"github.com/eldelto/solvent/service/errcode"
 	"github.com/eldelto/solvent/web/dto"
 	"github.com/google/uuid"
+
+	// Import Postgres driver
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
@@ -16,10 +19,10 @@ type PostgresRepository struct {
 }
 
 func NewPostgresRepository(host, port, user, password string) (*PostgresRepository, error) {
-	connectUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/solvent", user, password, host, port)
-	db, err := sql.Open("pgx", connectUrl)
+	connectURL := fmt.Sprintf("postgres://%s:%s@%s:%s/solvent", user, password, host, port)
+	db, err := sql.Open("pgx", connectURL)
 	if err != nil {
-		return nil, err
+		return nil, errcode.NewUnknownError(err, "could not connect to DB")
 	}
 
 	repo := PostgresRepository{db: db}
@@ -30,7 +33,7 @@ func NewPostgresRepository(host, port, user, password string) (*PostgresReposito
 		)`)
 	if err != nil {
 		db.Close()
-		return nil, err
+		return nil, errcode.NewUnknownError(err, "could not initialize DB")
 	}
 
 	return &repo, nil
@@ -49,7 +52,7 @@ func (r *PostgresRepository) Store(notebook *solvent.Notebook) error {
 
 	_, err = r.db.Exec("INSERT INTO notebooks VALUES($1, $2)", id, data)
 
-	return err
+	return errcode.NewNotebookError(notebook.ID, err, "could not execute insert")
 }
 
 func (r *PostgresRepository) Update(notebook *solvent.Notebook) error {
@@ -61,14 +64,14 @@ func (r *PostgresRepository) Update(notebook *solvent.Notebook) error {
 
 	result, err := r.db.Exec("UPDATE notebooks SET data = $2 WHERE id = $1", id, data)
 	if err != nil {
-		return err
+		return errcode.NewNotebookError(notebook.ID, err, "could not execute update")
 	}
 
 	count, err := result.RowsAffected()
 	if err != nil {
 		return err
 	} else if count <= 0 {
-		return fmt.Errorf("Notebook with ID '%v' could not be found", notebook.ID)
+		return errcode.NewNotFoundError("notebook", notebook.ID)
 	}
 
 	return nil
@@ -77,8 +80,10 @@ func (r *PostgresRepository) Update(notebook *solvent.Notebook) error {
 func (r *PostgresRepository) Fetch(id uuid.UUID) (*solvent.Notebook, error) {
 	var data []byte
 	err := r.db.QueryRow("SELECT data FROM notebooks WHERE id = $1", id.String()).Scan(&data)
-	if err != nil {
-		return nil, err
+	if err == sql.ErrNoRows {
+		return nil, errcode.NewNotFoundError("notebook", id)
+	} else if err != nil {
+		return nil, errcode.NewNotebookError(id, err, "could not execute select")
 	}
 
 	var notebookDto dto.NotebookDto
@@ -90,14 +95,14 @@ func (r *PostgresRepository) Fetch(id uuid.UUID) (*solvent.Notebook, error) {
 
 func (r *PostgresRepository) Remove(id uuid.UUID) error {
 	_, err := r.db.Exec("DELETE FROM notebooks WHERE id = $1", id.String())
-	return err
+	return errcode.NewNotebookError(id, err, "could not execute delete")
 }
 
 func notebookToJson(notebook *solvent.Notebook) ([]byte, error) {
 	dto := dto.NotebookToDto(notebook)
 	data, err := json.Marshal(dto)
 	if err != nil {
-		return nil, err
+		return nil, errcode.NewNotebookError(notebook.ID, err, "could not marshal")
 	}
 
 	return data, nil

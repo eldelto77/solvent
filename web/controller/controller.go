@@ -2,11 +2,13 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 
+	"github.com/eldelto/solvent/service"
+	"github.com/eldelto/solvent/service/errcode"
 	"github.com/eldelto/solvent/web/dto"
-	"github.com/eldelto/solvent/web/service"
 	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -38,7 +40,7 @@ func (c *MainController) fetchHealth(w http.ResponseWriter, r *http.Request) {
 func (c *MainController) createNotebook(w http.ResponseWriter, r *http.Request) {
 	notebook, err := c.service.Create()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 
@@ -58,7 +60,7 @@ func (c *MainController) fetchNotebook(w http.ResponseWriter, r *http.Request) {
 
 	notebook, err := c.service.Fetch(uuid)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		handleError(w, err)
 		return
 	}
 	dto := dto.NotebookToDto(notebook)
@@ -81,7 +83,7 @@ func (c *MainController) updateNotebook(w http.ResponseWriter, r *http.Request) 
 
 	mergedNotebook, err := c.service.Update(newNotebook)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handleError(w, err)
 		return
 	}
 	dto := dto.NotebookToDto(mergedNotebook)
@@ -100,7 +102,7 @@ func (c *MainController) removeNotebook(w http.ResponseWriter, r *http.Request) 
 
 	err = c.service.Remove(uuid)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		handleError(w, err)
 		return
 	}
 
@@ -121,4 +123,26 @@ func responseContentTypeHandler(next http.Handler, contentType string) http.Hand
 		w.Header().Set("Content-Type", contentType)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func handleError(w http.ResponseWriter, err error) {
+	var notFoundErrro *errcode.NotFoundError
+	if errors.As(err, &notFoundErrro) {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	var notebookError *errcode.NotebookError
+	if errors.As(err, &notebookError) {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var unknownError *errcode.UnknownError
+	if errors.As(err, &unknownError) {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Error(w, err.Error(), http.StatusInternalServerError)
 }

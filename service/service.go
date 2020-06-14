@@ -1,7 +1,10 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/eldelto/solvent"
+	"github.com/eldelto/solvent/service/errcode"
 	"github.com/google/uuid"
 )
 
@@ -26,11 +29,12 @@ func NewService(repository Repository) Service {
 func (s *Service) Create() (*solvent.Notebook, error) {
 	notebook, err := solvent.NewNotebook()
 	if err != nil {
-		return nil, err
+		return nil, errcode.NewUnknownError(err, "could not create a new notebook")
 	}
 
 	err = s.repository.Store(notebook)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
@@ -49,7 +53,7 @@ func (s *Service) Update(notebook *solvent.Notebook) (*solvent.Notebook, error) 
 
 	merged, err := oldNotebook.Merge(notebook)
 	if err != nil {
-		return nil, err
+		return nil, errcode.NewNotebookError(notebook.ID, err, "could not merge with old notebook")
 	}
 	mergedNotebook := merged.(*solvent.Notebook)
 

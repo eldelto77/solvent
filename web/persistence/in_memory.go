@@ -1,10 +1,10 @@
 package persistence
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/eldelto/solvent"
+	"github.com/eldelto/solvent/service/errcode"
 	"github.com/google/uuid"
 )
 
@@ -36,7 +36,7 @@ func (r *InMemoryRepository) Update(notebook *solvent.Notebook) error {
 
 	_, ok := r.store[notebook.ID]
 	if !ok {
-		return fmt.Errorf("Notebook with ID '%v' could not be found", notebook.ID)
+		return errcode.NewNotFoundError("notebook", notebook.ID)
 	}
 	r.store[notebook.ID] = *notebook
 
@@ -49,7 +49,7 @@ func (r *InMemoryRepository) Fetch(id uuid.UUID) (*solvent.Notebook, error) {
 
 	notebook, ok := r.store[id]
 	if !ok {
-		return nil, fmt.Errorf("Notebook with ID '%v' could not be found", id)
+		return nil, errcode.NewNotFoundError("notebook", notebook.ID)
 	}
 
 	return &notebook, nil

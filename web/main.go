@@ -7,9 +7,9 @@ import (
 
 	"github.com/eldelto/solvent"
 	"github.com/eldelto/solvent/internal/conf"
+	serv "github.com/eldelto/solvent/service"
 	"github.com/eldelto/solvent/web/controller"
 	"github.com/eldelto/solvent/web/persistence"
-	serv "github.com/eldelto/solvent/web/service"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )

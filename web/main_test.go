@@ -112,7 +112,7 @@ func TestUpdateNotebook(t *testing.T) {
 	AssertEquals(t, []interface{}{}, putResponseBody.ToDoLists.TombstoneSet, "responseBody.ToDoLists.TombstoneSet")
 }
 
-func TestRemoteNotebook(t *testing.T) {
+func TestRemoveNotebook(t *testing.T) {
 	ts := wireTestServer(t)
 	defer ts.Close()
 
@@ -122,8 +122,8 @@ func TestRemoteNotebook(t *testing.T) {
 	AssertEquals(t, nil, err, "response.Decode error")
 
 	response = ts.DELETE("/api/notebook/" + responseBody.ID.String())
-	AssertEquals(t, 204, response.StatusCode, "response.StatusCode")
+	AssertEquals(t, 204, response.StatusCode, "DELETE response.StatusCode")
 
 	response = ts.GET("/api/notebook/" + responseBody.ID.String())
-	AssertEquals(t, 404, response.StatusCode, "response.StatusCode")
+	AssertEquals(t, 404, response.StatusCode, "GET response.StatusCode")
 }
