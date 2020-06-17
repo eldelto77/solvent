@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.5"
 
 services:
   solvent:
@@ -6,6 +6,9 @@ services:
     volumes:
       - "./conf:/app/web/conf:ro"
       - "./secrets:/app/web/secrets:ro"
+    networks:
+      - solvent_net
+      - caddy_net
     expose:
       - 8080
     restart: always
@@ -14,6 +17,8 @@ services:
     image: postgres
     volumes:
       - "./postgres/data:/var/lib/postgresql/data"
+    networks:
+      - solvent_net
     restart: always
     environment:
       POSTGRES_USER_FILE: /run/secrets/postgres-user
@@ -27,3 +32,9 @@ secrets:
     file: ./secrets/postgres-user.txt
   postgres-password:
     file: ./secrets/postgres-password.txt
+
+networks:
+  solvent_net:
+  caddy_net:
+    name: caddy_net
+    external: true
