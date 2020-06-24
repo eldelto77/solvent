@@ -61,7 +61,7 @@ export default class RToDoList extends React.Component {
 
   render() {
     return (
-      <div className="ToDoList">
+      <div className={"ToDoList" + (this.props.toDoList.isChecked() ? " checked" : "")}>
         <input
           className="ToDoListTitle"
           type="text"

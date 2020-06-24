@@ -113,6 +113,15 @@ export default class ToDoList {
     return this;
   }
 
+  isChecked() {
+    const items = this.items;
+    if (items.length > 0 && items.find(item => !item.checked) === undefined) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   identifier() {
     return this.id;
   }

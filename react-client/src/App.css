@@ -127,19 +127,36 @@ svg {
   padding: 0 1em;
 }
 
+.ListViewToDoListsTitle {
+  width: 100%;
+  display: inline-block;
+  box-sizing: border-box;
+  padding: .5em 1em;
+  border-bottom: solid 1px var(--light-background-color);
+  color: var(--light-background-color);
+  opacity: var(--inactive-opacity);
+}
+
 .ListViewToDoList {
   font-family: 'Merriweather Sans', sans-serif;
+  font-size: 1em;
   width: 100%;
   display: block;
   margin: 1em 0;
   padding: 0 1em;
-  min-height: 4em;
+  min-height: 3.5em;
   text-align: left;
   border: none;
   cursor: pointer;
   box-shadow: var(--box-shadow);
   background-color: var(--light-background-color);
 }
+
+.ListViewToDoList.checked .ListViewToDoListTitle {
+  text-decoration: line-through;
+  opacity: var(--inactive-opacity-light-bg);
+}
+
 
 .ListViewHeader {
   justify-content: space-between;
@@ -226,6 +243,11 @@ button:disabled:hover {
   border: none;
   background: none;
   color: var(--text-color);
+}
+
+.ToDoList.checked .ToDoListTitle {
+  text-decoration: line-through;
+  opacity: var(--inactive-opacity-light-bg);
 }
 
 .ToDoListBody {

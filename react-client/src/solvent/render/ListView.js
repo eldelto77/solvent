@@ -31,6 +31,27 @@ function Header(props) {
 function ListViewMain(props) {
   return (
     <div className="ListViewMain">
+      <ToDoLists
+        className="ListViewToDoListsOpen"
+        title="Open"
+        toDoLists={props.toDoLists.filter(list => !list.isChecked())}
+        onClick={props.onClick}
+      />
+
+      <ToDoLists
+        className="ListViewToDoListsDone"
+        title="Done"
+        toDoLists={props.toDoLists.filter(list => list.isChecked())}
+        onClick={props.onClick}
+      />
+    </div>
+  );
+}
+
+function ToDoLists(props) {
+  return (
+    <div>
+      <span className="ListViewToDoListsTitle">{props.title}</span>
       {props.toDoLists.sort((a, b) => b.createdAt - a.createdAt)
         .map(toDoList =>
           <ToDoList key={toDoList.id} toDoList={toDoList} onClick={props.onClick} />
@@ -41,8 +62,8 @@ function ListViewMain(props) {
 
 function ToDoList(props) {
   return (
-    <button className="ListViewToDoList" onClick={() => props.onClick(props.toDoList)}>
-      {props.toDoList.title.value}
+    <button className={"ListViewToDoList" + (props.toDoList.isChecked() ? " checked" : "")} onClick={() => props.onClick(props.toDoList)}>
+      <span className="ListViewToDoListTitle">{props.toDoList.title.value}</span>
     </button>
   );
 }
