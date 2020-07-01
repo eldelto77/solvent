@@ -307,6 +307,11 @@ button:disabled:hover {
   background: none;
   opacity: var(--inactive-opacity-light-bg);
   cursor: pointer;
+  visibility: hidden;
+}
+
+.ToDoItemTitle:focus + .ToDoItemDelete {
+  visibility: visible;
 }
 
 .ToDoItemDelete:hover {
