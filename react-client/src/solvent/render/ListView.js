@@ -1,13 +1,12 @@
 import React from 'react';
 
-import { ReactComponent as ArrowLeft } from '../../icons/arrow-left.svg'
 import { ReactComponent as Magnify } from '../../icons/magnify.svg'
 import { ReactComponent as PlusCircle } from '../../icons/plus-circle-shadow.svg'
 
 export default function ListView(props) {
   return (
     <div className="ListView">
-      <Header onClick={props.onBack} backButtonEnabled={props.backButtonEnabled} />
+      <Header />
       <ListViewMain toDoLists={props.toDoLists} onClick={props.selectList} />
       <Footer onClick={props.addList} />
     </div>
@@ -16,15 +15,15 @@ export default function ListView(props) {
 
 function Header(props) {
   return (
-    <div className="ListViewHeader header">
-      <span className="ListViewSearchBarLogo menuButton">
-        <Magnify />
-      </span>
-      <input className="ListViewSearchBar" type="text" placeholder="Type to search" />
-      <button className="ListViewBackButton menuButton" onClick={props.onClick} disabled={!props.backButtonEnabled}>
-        <ArrowLeft />
-      </button>
-    </div>
+    <header>
+      <div className="ListViewHeader header">
+        <span className="HeaderSpacer"></span>
+        <h1 className="HeaderTitle">Solvent</h1>
+        <button className="DetailViewMenuButton menuButton" onClick={props.onSearchClick}>
+          <Magnify />
+        </button>
+      </div>
+    </header>
   );
 }
 

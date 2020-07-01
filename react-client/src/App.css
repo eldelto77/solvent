@@ -160,11 +160,6 @@ svg {
   opacity: var(--inactive-opacity-light-bg);
 }
 
-
-.ListViewHeader {
-  justify-content: space-between;
-}
-
 button {
   transition: all .1s ease !important;
 }
