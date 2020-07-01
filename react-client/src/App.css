@@ -31,10 +31,8 @@
 }*/
 
 #root {
-    width: 100%;
-    height: 100%;
-    padding: none;
-    margin: none;
+    width: 100vw;
+    height: 100vh;
     position: relative;
     overflow: hidden;
 }
@@ -109,14 +107,20 @@ svg {
   transform: translate(-100vw);
 }
 
-.ListView {
+.ViewContainer {
   width: 100vw;
   height: 100vh;
+  overflow-y: scroll;
+}
+
+.ListView {
+  width: 100%;
+  min-height: 100%;
 }
 
 .DetailView {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100%;
 }
 
 .DetailViewMain {

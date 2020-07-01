@@ -4,7 +4,7 @@ import './App.css';
 import DetailView from './solvent/render/DetailView'
 import ListView from './solvent/render/ListView'
 
-import {notebookFromDto, notebookToDto} from './solvent/Dto'
+import { notebookFromDto, notebookToDto } from './solvent/Dto'
 
 class App extends React.Component {
 
@@ -31,14 +31,14 @@ class App extends React.Component {
   updateNotebook = f => {
     const notebook = this.state.notebook;
     const newNotebook = f(notebook);
-    this.setState({notebook: newNotebook});
-    
+    this.setState({ notebook: newNotebook });
+
     const activeToDoList = this.state.activeToDoList;
-    if(activeToDoList) {
+    if (activeToDoList) {
       const newActiveToDoList = notebook.getList(activeToDoList.id);
-      if(newActiveToDoList) {
+      if (newActiveToDoList) {
         const mergedActiveToDoList = activeToDoList.merge(newActiveToDoList);
-        this.setState({activeToDoList: mergedActiveToDoList});
+        this.setState({ activeToDoList: mergedActiveToDoList });
       }
     }
   }
@@ -47,7 +47,7 @@ class App extends React.Component {
     this.updateNotebook(notebook => {
       const activeList = notebook.getList(this.state.activeToDoList.id);
       f(activeList);
-      return notebook; 
+      return notebook;
     })
   }
 
@@ -57,7 +57,7 @@ class App extends React.Component {
       this.updateNotebook(notebook => notebook.merge(newNotebook));
     } else {
       const newNotebook = await this.fetchState();
-      this.setState({notebook: newNotebook});
+      this.setState({ notebook: newNotebook });
     }
   }
 
@@ -134,24 +134,28 @@ class App extends React.Component {
   render() {
     return (
       <div className={"App" + (this.state.isListViewActive ? " overview" : "")}>
-        <DetailView
-          toDoList={this.state.activeToDoList}
-          checkItem={this.checkItem}
-          addItem={this.addItem}
-          removeItem={this.removeItem}
-          moveItem={this.moveItem}
-          renameItem={this.renameItem}
-          renameList={this.renameList}
-          activateListView={this.activateListView}
-        />
+        <div className="ViewContainer">
+          <DetailView
+            toDoList={this.state.activeToDoList}
+            checkItem={this.checkItem}
+            addItem={this.addItem}
+            removeItem={this.removeItem}
+            moveItem={this.moveItem}
+            renameItem={this.renameItem}
+            renameList={this.renameList}
+            activateListView={this.activateListView}
+          />
+        </div>
 
-        <ListView
-          toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
-          selectList={this.selectList}
-          addList={this.addList}
-          onBack={this.backToDetailView}
-          backButtonEnabled={this.state.activeToDoList ? true : false}
-        />
+        <div className="ViewContainer">
+          <ListView
+            toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
+            selectList={this.selectList}
+            addList={this.addList}
+            onBack={this.backToDetailView}
+            backButtonEnabled={this.state.activeToDoList ? true : false}
+          />
+        </div>
       </div>
     );
   }
