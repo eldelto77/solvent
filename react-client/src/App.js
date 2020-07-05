@@ -109,6 +109,7 @@ class App extends React.Component {
     } else {
       this.updateActiveList(list => list.checkItem(item.id));
     }
+    document.activeElement.blur();
   }
 
   addItem = title => {
