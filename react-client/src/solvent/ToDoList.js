@@ -96,6 +96,10 @@ export default class ToDoList {
 
   renameItem(id, title) {
     const oldItem = this.getItem(id);
+    if (oldItem.title === title) {
+      return oldItem.id;
+    }
+
     this.removeItem(oldItem.id);
 
     const newId = this.addItem(title);
