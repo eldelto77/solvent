@@ -1,5 +1,6 @@
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
+import TextareaAutosize from 'react-textarea-autosize';
 
 import { ReactComponent as CheckedCircle } from '../../icons/check-circle-outline.svg'
 import { ReactComponent as CheckedCircleBlank } from '../../icons/checkbox-blank-circle-outline.svg'
@@ -50,14 +51,14 @@ export default class RToDoItem extends React.Component {
             <button className="ToDoItemCheckbox" onClick={() => this.props.onCheck(this.props.item)}>
               {this.props.item.checked ? <CheckedCircle /> : <CheckedCircleBlank />}
             </ button>
-            <input
+            <TextareaAutosize
               className="ToDoItemTitle"
-              type="text"
-              value={this.state.editing ? this.state.newTitle : this.props.item.title}
               onFocus={this.startEditing}
               onChange={this.editItem}
               onBlur={this.renameItem}
-            />
+            >
+              {this.state.editing ? this.state.newTitle : this.props.item.title}
+            </TextareaAutosize>
             <button
               className="ToDoItemDelete"
               onClick={() => this.props.onRemove(this.props.item)}>

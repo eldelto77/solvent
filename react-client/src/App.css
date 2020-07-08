@@ -42,7 +42,7 @@ body {
   background-color: var(--light-brand-color);
 }
 
-input, button {
+input, button, textarea {
   border-radius: var(--border-radius);
   font-family: 'Cabin', sans-serif;
 }
@@ -51,9 +51,14 @@ input[type=text] {
   height: 100%;
 }
 
-input[type=text]::placeholder {
+input[type=text]::placeholder, textarea::placeholder {
   color: var(--text-color);
   opacity: var(--inactive-opacity-light-bg);
+}
+
+textarea {
+  resize: none;
+  line-height: 1.5em;
 }
 
 svg {
@@ -260,7 +265,7 @@ button:disabled:hover {
 }
 
 .ToDoItem {
-  height: 3em;
+  min-height: 3em;
   /*padding-left: 5%;*/
   padding: .4em 0;
   box-sizing: border-box;

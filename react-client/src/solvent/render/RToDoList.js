@@ -1,5 +1,7 @@
 import React from 'react'
 
+import TextareaAutosize from 'react-textarea-autosize';
+
 import AddItemBar from './AddItemBar'
 import RToDoItems from './RToDoItems'
 
@@ -62,15 +64,15 @@ export default class RToDoList extends React.Component {
   render() {
     return (
       <div className={"ToDoList" + (this.props.toDoList.isChecked() ? " checked" : "")}>
-        <input
+        <TextareaAutosize
           className="ToDoListTitle"
-          type="text"
-          value={this.state.editing ? this.state.newTitle : this.props.toDoList.title.value}
           placeholder="Title"
           onFocus={this.startTitleEditing}
           onChange={this.editListTitle}
           onBlur={this.renameList}
-        />
+        >
+          {this.state.editing ? this.state.newTitle : this.props.toDoList.title.value}
+        </TextareaAutosize>
 
         <div className="ToDoListBody">
           <RToDoItems
