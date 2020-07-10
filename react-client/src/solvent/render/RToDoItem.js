@@ -1,10 +1,11 @@
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
-import TextareaAutosize from 'react-textarea-autosize';
 
 import { ReactComponent as CheckedCircle } from '../../icons/check-circle-outline.svg'
 import { ReactComponent as CheckedCircleBlank } from '../../icons/checkbox-blank-circle-outline.svg'
 import { ReactComponent as TrashCan } from '../../icons/delete-outline.svg'
+
+import InputArea from './InputArea'
 
 // Move to own component and keep newTitle in state.
 // Apply renaming on focus loss
@@ -51,14 +52,14 @@ export default class RToDoItem extends React.Component {
             <button className="ToDoItemCheckbox" onClick={() => this.props.onCheck(this.props.item)}>
               {this.props.item.checked ? <CheckedCircle /> : <CheckedCircleBlank />}
             </ button>
-            <TextareaAutosize
+            <InputArea
               className="ToDoItemTitle"
+              value={this.state.editing ? this.state.newTitle : this.props.item.title}
               onFocus={this.startEditing}
               onChange={this.editItem}
               onBlur={this.renameItem}
-            >
-              {this.state.editing ? this.state.newTitle : this.props.item.title}
-            </TextareaAutosize>
+              onEnter={() => document.activeElement.blur()}
+            />
             <button
               className="ToDoItemDelete"
               onClick={() => this.props.onRemove(this.props.item)}>
