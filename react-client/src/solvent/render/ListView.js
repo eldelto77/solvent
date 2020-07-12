@@ -75,7 +75,7 @@ function AddListButton(props) {
 
 function ToDoList(props) {
   return (
-    <Link to={"/solvent/list/" + props.toDoList.id}>
+    <Link to={"/list/" + props.toDoList.id}>
       <button className={"ListViewToDoList" + (props.toDoList.isChecked() ? " checked" : "")} onClick={() => props.onClick(props.toDoList)}>
         <span className="ListViewToDoListTitle">{props.toDoList.title.value}</span>
       </button>

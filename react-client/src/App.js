@@ -5,7 +5,6 @@ import {
   Switch,
   Route,
   useParams,
-  Redirect,
   useHistory
 } from "react-router-dom";
 
@@ -72,7 +71,7 @@ class App extends React.Component {
 
   pushState = async notebook => {
     const dto = notebookToDto(notebook);
-    const response = await fetch("/api/notebook", {
+    const response = await fetch(process.env.REACT_APP_API_PATH + "/api/notebook", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto)
@@ -83,7 +82,7 @@ class App extends React.Component {
 
   fetchState = async () => {
     // TODO: Fetch for real user
-    const response = await fetch("/api/notebook/00000000-0000-0000-0000-000000000000");
+    const response = await fetch(process.env.REACT_APP_API_PATH + "/api/notebook/00000000-0000-0000-0000-000000000000");
     const responseBody = await response.json();
     return notebookFromDto(responseBody);
   }
@@ -102,7 +101,7 @@ class App extends React.Component {
       notebook: this.state.notebook,
       isListViewActive: false
     });
-    history.push("/solvent/list/" + list.id);
+    history.push("/list/" + list.id);
   }
 
   activateListView = () => {
@@ -140,11 +139,11 @@ class App extends React.Component {
 
   render() {
     return (
-      <Router>
+      <Router basename="/solvent">
         <div className={"App" + (this.state.isListViewActive ? " overview" : "")}>
 
           <Switch>
-            <Route path="/solvent/list/:listId">
+            <Route path="/list/:listId">
               <DetailViewContainer
                 notebook={this.state.notebook}
                 checkItem={this.checkItem}
@@ -157,16 +156,12 @@ class App extends React.Component {
               />
             </Route>
 
-            <Route path="/solvent">
+            <Route path="/">
               <ListViewContainer
                 toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
                 selectList={this.selectList}
                 addList={this.addList}
               />
-            </Route>
-
-            <Route path="/">
-              <Redirect to="/solvent" />
             </Route>
           </Switch>
 
