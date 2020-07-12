@@ -11,7 +11,7 @@ export default React.forwardRef((props, ref) =>
 );
 
 function onKeyDown(event, f) {
-    if (event.keyCode == 13) {
+    if (event.keyCode === 13) {
         f();
         event.preventDefault();
     }

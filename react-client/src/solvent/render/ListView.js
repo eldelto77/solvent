@@ -2,14 +2,13 @@ import React from 'react';
 import { Link } from "react-router-dom";
 
 import { ReactComponent as Magnify } from '../../icons/magnify.svg'
-import { ReactComponent as PlusCircle } from '../../icons/plus-circle-shadow.svg'
+import { ReactComponent as Plus } from '../../icons/plus.svg'
 
 export default function ListView(props) {
   return (
     <div className="ListView">
       <Header />
-      <ListViewMain toDoLists={props.toDoLists} onClick={props.selectList} />
-      <Footer onClick={props.addList} />
+      <ListViewMain toDoLists={props.toDoLists} onClick={props.selectList} onAddList={props.addList} />
     </div>
   );
 }
@@ -34,6 +33,7 @@ function ListViewMain(props) {
       <ToDoLists
         className="ListViewToDoListsOpen"
         title="Open"
+        addButton={true}
         toDoLists={props.toDoLists.filter(list => !list.isChecked())}
         onClick={props.onClick}
       />
@@ -43,6 +43,7 @@ function ListViewMain(props) {
         title="Done"
         toDoLists={props.toDoLists.filter(list => list.isChecked())}
         onClick={props.onClick}
+        onAddList={props.onAddList}
       />
     </div>
   );
@@ -52,11 +53,23 @@ function ToDoLists(props) {
   return (
     <div>
       <span className="ListViewToDoListsTitle">{props.title}</span>
+
+      {props.addButton ?
+        <AddListButton onClick={props.onAddList} />
+        : ""}
       {props.toDoLists.sort((a, b) => b.createdAt - a.createdAt)
         .map(toDoList =>
           <ToDoList key={toDoList.id} toDoList={toDoList} onClick={props.onClick} />
         )}
     </div>
+  );
+}
+
+function AddListButton(props) {
+  return (
+    <button className="ListViewAddListButton" onClick={props.onClick}>
+      <Plus />
+    </button>
   );
 }
 
@@ -67,15 +80,5 @@ function ToDoList(props) {
         <span className="ListViewToDoListTitle">{props.toDoList.title.value}</span>
       </button>
     </Link>
-  );
-}
-
-function Footer(props) {
-  return (
-    <div className="ListViewFooter footer">
-      <button className="ListViewAddButton" onClick={props.onClick}>
-        <PlusCircle />
-      </button>
-    </div>
   );
 }

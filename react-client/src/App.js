@@ -4,9 +4,9 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link,
   useParams,
-  Redirect
+  Redirect,
+  useHistory
 } from "react-router-dom";
 
 import './App.css';
@@ -14,7 +14,6 @@ import DetailView from './solvent/render/DetailView'
 import ListView from './solvent/render/ListView'
 
 import { notebookFromDto, notebookToDto } from './solvent/Dto'
-import Notebook from './solvent/Notebook';
 
 class App extends React.Component {
 
@@ -96,13 +95,14 @@ class App extends React.Component {
     });
   }
 
-  addList = () => {
+  addList = (history) => {
     const list = this.state.notebook.addList("")
     this.setState({
       activeToDoList: list,
       notebook: this.state.notebook,
       isListViewActive: false
     });
+    history.push("/solvent/list/" + list.id);
   }
 
   activateListView = () => {
@@ -158,13 +158,11 @@ class App extends React.Component {
             </Route>
 
             <Route path="/solvent">
-              <div className="ViewContainer">
-                <ListView
-                  toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
-                  selectList={this.selectList}
-                  addList={this.addList}
-                />
-              </div>
+              <ListViewContainer
+                toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
+                selectList={this.selectList}
+                addList={this.addList}
+              />
             </Route>
 
             <Route path="/">
@@ -178,6 +176,19 @@ class App extends React.Component {
   }
 }
 
+function ListViewContainer(props) {
+  const history = useHistory();
+
+  return (
+    <div className="ViewContainer">
+      <ListView
+        {...props}
+        addList={() => props.addList(history)}
+      />
+    </div>
+  );
+}
+
 function DetailViewContainer(props) {
   const { listId } = useParams();
   if (listId === undefined || props.notebook === null) {
@@ -189,12 +200,12 @@ function DetailViewContainer(props) {
     return <h1>Not Found</h1>;
   }
 
-  return <div className="ViewContainer">
+  return (<div className="ViewContainer">
     <DetailView
       {...props}
       toDoList={toDoList}
     />
-  </div>
+  </div>);
 }
 
 export default App;
