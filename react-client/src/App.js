@@ -1,5 +1,12 @@
 import React from 'react';
 
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
+
 import './App.css';
 import DetailView from './solvent/render/DetailView'
 import ListView from './solvent/render/ListView'
@@ -130,28 +137,37 @@ class App extends React.Component {
 
   render() {
     return (
-      <div className={"App" + (this.state.isListViewActive ? " overview" : "")}>
-        <div className="ViewContainer">
-          <DetailView
-            toDoList={this.state.activeToDoList}
-            checkItem={this.checkItem}
-            addItem={this.addItem}
-            removeItem={this.removeItem}
-            moveItem={this.moveItem}
-            renameItem={this.renameItem}
-            renameList={this.renameList}
-            activateListView={this.activateListView}
-          />
-        </div>
+      <Router>
+        <div className={"App" + (this.state.isListViewActive ? " overview" : "")}>
+          <Switch>
+            <Route path="/list/:id">
+              <div className="ViewContainer">
+                <DetailView
+                  toDoList={this.state.activeToDoList}
+                  checkItem={this.checkItem}
+                  addItem={this.addItem}
+                  removeItem={this.removeItem}
+                  moveItem={this.moveItem}
+                  renameItem={this.renameItem}
+                  renameList={this.renameList}
+                  activateListView={this.activateListView}
+                />
+              </div>
+            </Route>
 
-        <div className="ViewContainer">
-          <ListView
-            toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
-            selectList={this.selectList}
-            addList={this.addList}
-          />
+            <Route path="/">
+              <div className="ViewContainer">
+                <ListView
+                  toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
+                  selectList={this.selectList}
+                  addList={this.addList}
+                />
+              </div>
+            </Route>
+          </Switch>
+
         </div>
-      </div>
+      </Router>
     );
   }
 }

@@ -103,13 +103,9 @@ svg {
 }
 
 .App {
-  width: 200vw;
+  width: 100vw;
   display: flex;
   transition: transform .1s;
-}
-
-.App.overview {
-  transform: translate(-100vw);
 }
 
 .ViewContainer {
