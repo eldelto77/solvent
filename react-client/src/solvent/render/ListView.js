@@ -36,6 +36,7 @@ function ListViewMain(props) {
         addButton={true}
         toDoLists={props.toDoLists.filter(list => !list.isChecked())}
         onClick={props.onClick}
+        onAddList={props.onAddList}
       />
 
       <ToDoLists
@@ -43,7 +44,6 @@ function ListViewMain(props) {
         title="Done"
         toDoLists={props.toDoLists.filter(list => list.isChecked())}
         onClick={props.onClick}
-        onAddList={props.onAddList}
       />
     </div>
   );

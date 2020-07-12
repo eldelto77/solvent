@@ -139,7 +139,7 @@ class App extends React.Component {
 
   render() {
     return (
-      <Router basename="/solvent">
+      <Router basename={process.env.PUBLIC_URL}>
         <div className={"App" + (this.state.isListViewActive ? " overview" : "")}>
 
           <Switch>
