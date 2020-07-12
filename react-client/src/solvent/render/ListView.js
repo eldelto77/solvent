@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from "react-router-dom";
 
 import { ReactComponent as Magnify } from '../../icons/magnify.svg'
 import { ReactComponent as PlusCircle } from '../../icons/plus-circle-shadow.svg'
@@ -61,9 +62,11 @@ function ToDoLists(props) {
 
 function ToDoList(props) {
   return (
-    <button className={"ListViewToDoList" + (props.toDoList.isChecked() ? " checked" : "")} onClick={() => props.onClick(props.toDoList)}>
-      <span className="ListViewToDoListTitle">{props.toDoList.title.value}</span>
-    </button>
+    <Link to={"/solvent/list/" + props.toDoList.id}>
+      <button className={"ListViewToDoList" + (props.toDoList.isChecked() ? " checked" : "")} onClick={() => props.onClick(props.toDoList)}>
+        <span className="ListViewToDoListTitle">{props.toDoList.title.value}</span>
+      </button>
+    </Link>
   );
 }
 

@@ -4,7 +4,9 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link
+  Link,
+  useParams,
+  Redirect
 } from "react-router-dom";
 
 import './App.css';
@@ -12,6 +14,7 @@ import DetailView from './solvent/render/DetailView'
 import ListView from './solvent/render/ListView'
 
 import { notebookFromDto, notebookToDto } from './solvent/Dto'
+import Notebook from './solvent/Notebook';
 
 class App extends React.Component {
 
@@ -70,7 +73,7 @@ class App extends React.Component {
 
   pushState = async notebook => {
     const dto = notebookToDto(notebook);
-    const response = await fetch("api/notebook", {
+    const response = await fetch("/api/notebook", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto)
@@ -81,7 +84,7 @@ class App extends React.Component {
 
   fetchState = async () => {
     // TODO: Fetch for real user
-    const response = await fetch("api/notebook/00000000-0000-0000-0000-000000000000");
+    const response = await fetch("/api/notebook/00000000-0000-0000-0000-000000000000");
     const responseBody = await response.json();
     return notebookFromDto(responseBody);
   }
@@ -139,23 +142,22 @@ class App extends React.Component {
     return (
       <Router>
         <div className={"App" + (this.state.isListViewActive ? " overview" : "")}>
+
           <Switch>
-            <Route path="/list/:id">
-              <div className="ViewContainer">
-                <DetailView
-                  toDoList={this.state.activeToDoList}
-                  checkItem={this.checkItem}
-                  addItem={this.addItem}
-                  removeItem={this.removeItem}
-                  moveItem={this.moveItem}
-                  renameItem={this.renameItem}
-                  renameList={this.renameList}
-                  activateListView={this.activateListView}
-                />
-              </div>
+            <Route path="/solvent/list/:listId">
+              <DetailViewContainer
+                notebook={this.state.notebook}
+                checkItem={this.checkItem}
+                addItem={this.addItem}
+                removeItem={this.removeItem}
+                moveItem={this.moveItem}
+                renameItem={this.renameItem}
+                renameList={this.renameList}
+                activateListView={this.activateListView}
+              />
             </Route>
 
-            <Route path="/">
+            <Route path="/solvent">
               <div className="ViewContainer">
                 <ListView
                   toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
@@ -164,12 +166,35 @@ class App extends React.Component {
                 />
               </div>
             </Route>
+
+            <Route path="/">
+              <Redirect to="/solvent" />
+            </Route>
           </Switch>
 
         </div>
       </Router>
     );
   }
+}
+
+function DetailViewContainer(props) {
+  const { listId } = useParams();
+  if (listId === undefined || props.notebook === null) {
+    return <h1>Not Found</h1>;
+  }
+
+  const toDoList = props.notebook.getList(listId);
+  if (toDoList === undefined) {
+    return <h1>Not Found</h1>;
+  }
+
+  return <div className="ViewContainer">
+    <DetailView
+      {...props}
+      toDoList={toDoList}
+    />
+  </div>
 }
 
 export default App;

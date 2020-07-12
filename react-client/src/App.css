@@ -42,6 +42,10 @@ body {
   background-color: var(--light-brand-color);
 }
 
+a {
+  text-decoration: none;
+}
+
 input, button, textarea {
   border-radius: var(--border-radius);
   font-family: 'Cabin', sans-serif;

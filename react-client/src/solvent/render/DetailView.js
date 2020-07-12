@@ -1,8 +1,10 @@
 import React from 'react';
+import { Link } from "react-router-dom";
 
 import RToDoList from './RToDoList'
 
 import { ReactComponent as Menu } from '../../icons/menu.svg'
+import { ReactComponent as BackArrow } from '../../icons/arrow-left.svg'
 
 export default function DetailView(props) {
   return (
@@ -29,8 +31,14 @@ function Header(props) {
   return (
     <header>
       <div className="DetailViewHeader header">
-        <span className="HeaderSpacer"></span>
+        <Link to="/solvent">
+          <button className="DetailViewMenuButton menuButton" onClick={props.onMenuClick}>
+            <BackArrow />
+          </button>
+        </Link>
+
         <h1 className="HeaderTitle">Solvent</h1>
+
         <button className="DetailViewMenuButton menuButton" onClick={props.onMenuClick}>
           <Menu />
         </button>
