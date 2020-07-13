@@ -327,6 +327,8 @@ button:disabled:hover {
 }
 
 .ToDoItemDragHandle {
+  height: 1.5em;
+  width: 1.5em;
   opacity: var(--inactive-opacity-light-bg);
 }
 
