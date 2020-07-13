@@ -31,7 +31,7 @@ function Header(props) {
   return (
     <header>
       <div className="DetailViewHeader header">
-        <Link to="/solvent">
+        <Link to="/">
           <button className="DetailViewMenuButton menuButton">
             <BackArrow />
           </button>
