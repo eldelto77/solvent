@@ -23,7 +23,7 @@ export default function AddItemBar(props) {
         onChange={props.onChange}
         onEnter={() => addButtonRef.click()}
       />
-      <button className="AddItemBarLogo" type="button" disabled="true">+</button>
+      <button className="AddItemBarLogo" type="button" disabled={true}>+</button>
     </form>
   );
 }

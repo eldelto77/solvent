@@ -9,7 +9,7 @@ import { ReactComponent as BackArrow } from '../../icons/arrow-left.svg'
 export default function DetailView(props) {
   return (
     <div className="DetailView">
-      <Header onMenuClick={props.activateListView} />
+      <Header />
       <div className="DetailViewMain">
         {props.toDoList ?
           <RToDoList
@@ -32,7 +32,7 @@ function Header(props) {
     <header>
       <div className="DetailViewHeader header">
         <Link to="/solvent">
-          <button className="DetailViewMenuButton menuButton" onClick={props.onMenuClick}>
+          <button className="DetailViewMenuButton menuButton">
             <BackArrow />
           </button>
         </Link>
