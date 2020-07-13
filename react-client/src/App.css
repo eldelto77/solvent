@@ -314,21 +314,20 @@ button:disabled:hover {
   padding: 0;
   border: none;
   background: none;
-  opacity: var(--inactive-opacity-light-bg);
   cursor: pointer;
   visibility: hidden;
+}
+
+.ToDoItemDelete > svg {
+  fill: var(--alert-color);
 }
 
 .ToDoItemTitle:focus + .ToDoItemDelete {
   visibility: visible;
 }
 
-.ToDoItemDelete:hover {
-  opacity: 1;
-}
-
-.ToDoItemDelete:hover > svg {
-  fill: var(--alert-color);
+.ToDoItemDragHandle {
+  opacity: var(--inactive-opacity-light-bg);
 }
 
 .AddItemBar {

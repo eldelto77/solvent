@@ -28,18 +28,24 @@ export default class RToDoList extends React.Component {
   }
 
   renameList = () => {
-    this.props.renameList(this.state.newTitle);
+    this.props.renameList(this.props.toDoList, this.state.newTitle);
     this.setState({
       editing: false,
       newTitle: this.props.toDoList.title.value
     });
   }
 
+  checkItem = (item) => this.props.checkItem(this.props.toDoList, item);
+
   addItem = event => {
-    this.props.addItem(this.state.newItemTitle);
+    this.props.addItem(this.props.toDoList, this.state.newItemTitle);
     this.setState({ newItemTitle: "" });
     event.preventDefault();
   }
+
+  removeItem = (item) => this.props.removeItem(this.props.toDoList, item);
+
+  renameItem = (item, title) => this.props.renameItem(this.props.toDoList, item, title);
 
   editNewItemTitle = event => {
     this.setState({ newItemTitle: event.target.value });
@@ -57,7 +63,7 @@ export default class RToDoList extends React.Component {
       return;
     }
 
-    this.props.moveItem(draggableId, destination.index);
+    this.props.moveItem(this.props.toDoList, draggableId, destination.index);
   }
 
   render() {
@@ -76,10 +82,10 @@ export default class RToDoList extends React.Component {
         <div className="ToDoListBody">
           <RToDoItems
             items={this.props.toDoList.items}
-            onCheck={this.props.checkItem}
-            onRemove={this.props.removeItem}
+            onCheck={this.checkItem}
+            onRemove={this.removeItem}
             onDragEnd={this.moveItem}
-            onRename={this.props.renameItem}
+            onRename={this.renameItem}
           />
 
           <AddItemBar

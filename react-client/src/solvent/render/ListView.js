@@ -8,7 +8,7 @@ export default function ListView(props) {
   return (
     <div className="ListView">
       <Header />
-      <ListViewMain toDoLists={props.toDoLists} onClick={props.selectList} onAddList={props.addList} />
+      <ListViewMain toDoLists={props.toDoLists} onAddList={props.addList} />
     </div>
   );
 }
@@ -35,7 +35,6 @@ function ListViewMain(props) {
         title="Open"
         addButton={true}
         toDoLists={props.toDoLists.filter(list => !list.isChecked())}
-        onClick={props.onClick}
         onAddList={props.onAddList}
       />
 
@@ -43,7 +42,6 @@ function ListViewMain(props) {
         className="ListViewToDoListsDone"
         title="Done"
         toDoLists={props.toDoLists.filter(list => list.isChecked())}
-        onClick={props.onClick}
       />
     </div>
   );
@@ -59,7 +57,7 @@ function ToDoLists(props) {
         : ""}
       {props.toDoLists.sort((a, b) => b.createdAt - a.createdAt)
         .map(toDoList =>
-          <ToDoList key={toDoList.id} toDoList={toDoList} onClick={props.onClick} />
+          <ToDoList key={toDoList.id} toDoList={toDoList} />
         )}
     </div>
   );
@@ -76,7 +74,7 @@ function AddListButton(props) {
 function ToDoList(props) {
   return (
     <Link to={"/list/" + props.toDoList.id}>
-      <button className={"ListViewToDoList" + (props.toDoList.isChecked() ? " checked" : "")} onClick={() => props.onClick(props.toDoList)}>
+      <button className={"ListViewToDoList" + (props.toDoList.isChecked() ? " checked" : "")}>
         <span className="ListViewToDoListTitle">{props.toDoList.title.value}</span>
       </button>
     </Link>

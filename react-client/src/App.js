@@ -21,7 +21,6 @@ class App extends React.Component {
 
     this.state = {
       notebook: null,
-      activeToDoList: null,
       isListViewActive: true
     }
   }
@@ -49,14 +48,6 @@ class App extends React.Component {
         this.setState({ activeToDoList: mergedActiveToDoList });
       }
     }
-  }
-
-  updateActiveList = f => {
-    this.updateNotebook(notebook => {
-      const activeList = notebook.getList(this.state.activeToDoList.id);
-      f(activeList);
-      return notebook;
-    })
   }
 
   syncState = async () => {
@@ -87,13 +78,6 @@ class App extends React.Component {
     return notebookFromDto(responseBody);
   }
 
-  selectList = list => {
-    return this.setState({
-      activeToDoList: list,
-      isListViewActive: false
-    });
-  }
-
   addList = (history) => {
     const list = this.state.notebook.addList("")
     this.setState({
@@ -104,37 +88,55 @@ class App extends React.Component {
     history.push("/list/" + list.id);
   }
 
-  activateListView = () => {
-    this.setState({ isListViewActive: true });
+  renameList = (list, title) => {
+    this.updateNotebook(notebook => {
+      list.rename(title);
+      return notebook;
+    });
   }
 
-  renameList = title => {
-    this.updateActiveList(list => list.rename(title));
-  }
-
-  checkItem = item => {
+  checkItem = (list, item) => {
     if (item.checked) {
-      this.updateActiveList(list => list.uncheckItem(item.id));
+      this.updateNotebook(notebook => {
+        list.uncheckItem(item.id);
+        return notebook;
+      });
     } else {
-      this.updateActiveList(list => list.checkItem(item.id));
+      this.updateNotebook(notebook => {
+        list.checkItem(item.id);
+        return notebook;
+      });
     }
     document.activeElement.blur();
   }
 
-  addItem = title => {
-    this.updateActiveList(list => list.addItem(title));
+  addItem = (list, title) => {
+    this.updateNotebook(notebook => {
+      list.addItem(title);
+      return notebook;
+    });
   }
 
-  removeItem = item => {
-    this.updateActiveList(list => list.removeItem(item.id));
+  removeItem = (list, item) => {
+    this.updateNotebook(notebook => {
+      list.removeItem(item.id);
+      return notebook;
+    });
+
   }
 
-  moveItem = (id, targetIndex) => {
-    this.updateActiveList(list => list.moveItem(id, targetIndex));
+  moveItem = (list, id, targetIndex) => {
+    this.updateNotebook(notebook => {
+      list.moveItem(id, targetIndex);
+      return notebook;
+    });
   }
 
-  renameItem = (item, title) => {
-    this.updateActiveList(list => list.renameItem(item.id, title));
+  renameItem = (list, item, title) => {
+    this.updateNotebook(notebook => {
+      list.renameItem(item.id, title);
+      return notebook;
+    });
   }
 
   render() {
@@ -152,14 +154,12 @@ class App extends React.Component {
                 moveItem={this.moveItem}
                 renameItem={this.renameItem}
                 renameList={this.renameList}
-                activateListView={this.activateListView}
               />
             </Route>
 
             <Route path="/">
               <ListViewContainer
                 toDoLists={this.state.notebook ? this.state.notebook.getLists() : []}
-                selectList={this.selectList}
                 addList={this.addList}
               />
             </Route>
