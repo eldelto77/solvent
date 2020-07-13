@@ -17,8 +17,12 @@ function Header(props) {
   return (
     <header>
       <div className="ListViewHeader header">
-        <span className="HeaderSpacer"></span>
+        <button className="DetailViewMenuButton menuButton" style={{ visibility: "hidden" }} onClick={props.onSearchClick}>
+          <Magnify />
+        </button>
+
         <h1 className="HeaderTitle">Solvent</h1>
+
         <button className="DetailViewMenuButton menuButton" onClick={props.onSearchClick}>
           <Magnify />
         </button>
