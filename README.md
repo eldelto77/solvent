@@ -3,8 +3,6 @@
 
 A minimalistic CRDT-based To-Do list.
 
-// Image1 Image2
-
 - [Solvent](#solvent)
   - [Introduction](#introduction)
     - [Adding / Removing](#adding--removing)
@@ -12,6 +10,7 @@ A minimalistic CRDT-based To-Do list.
     - [Re-Ordering](#re-ordering)
   - [Getting Started](#getting-started)
   - [To-Do](#to-do)
+  - [Screens](#screens)
 
 ## Introduction
 
@@ -67,6 +66,9 @@ go run web/main.go
 cd react-client
 npm install
 npm start
+
+// Build Docker image
+./docker_build.sh
 ```
 
 ## To-Do
@@ -81,3 +83,10 @@ npm start
 - [ ] Register a service worker to cache data on reloads
 - [ ] Send delta in update request / response instead of the everything
 - [ ] Implement search functionality
+
+## Screens
+
+![List View](https://raw.githubusercontent.com/eldelto/solvent/master/docs/resources/list-view.png)
+
+![Detail View](https://raw.githubusercontent.com/eldelto/solvent/master/docs/resources/detail-view.png)
+
