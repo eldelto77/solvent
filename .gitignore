@@ -13,3 +13,6 @@
 # Ignore built Docker images
 docker_images
 
+# Ignore VS Code related files
+.DS_Store
+
