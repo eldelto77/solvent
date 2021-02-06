@@ -112,6 +112,7 @@ func (c *MainController) removeNotebook(w http.ResponseWriter, r *http.Request) 
 func baseMiddleWare(nextFunc http.HandlerFunc) http.Handler {
 	next := http.Handler(nextFunc)
 	next = handlers.CombinedLoggingHandler(os.Stdout, next)
+	next = handlers.CompressHandler(next)
 	next = handlers.ContentTypeHandler(next, "application/json")
 	next = responseContentTypeHandler(next, "application/json")
 
