@@ -11,6 +11,7 @@ import (
 	"github.com/eldelto/solvent/web/controller"
 	"github.com/eldelto/solvent/web/persistence"
 	"github.com/google/uuid"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -57,7 +58,7 @@ func main() {
 	mainController.RegisterRoutes(r)
 
 	fs := http.FileServer(http.Dir("./static"))
-	r.PathPrefix("/").Handler(fs)
+	r.PathPrefix("/").Handler(handlers.CompressHandler(fs))
 
 	http.Handle("/", r)
 
