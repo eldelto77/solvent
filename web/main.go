@@ -58,10 +58,24 @@ func main() {
 	mainController.RegisterRoutes(r)
 
 	fs := http.FileServer(http.Dir("./static"))
-	r.PathPrefix("/").Handler(handlers.CompressHandler(fs))
+	r.PathPrefix("/").Handler(staticContentMiddleWare(fs))
 
 	http.Handle("/", r)
 
 	log.Printf("Listening on localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+}
+
+func responseCacheHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=604800, immutable")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func staticContentMiddleWare(next http.Handler) http.Handler {
+	next = handlers.CompressHandler(next)
+	next = responseCacheHandler(next)
+
+	return next
 }
