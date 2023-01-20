@@ -25,7 +25,7 @@ var prodCp = conf.NewFileConfigProvider("conf/prod.properties")
 var secretsCp = conf.NewFileConfigProvider("secrets/prod.properties")
 var config = conf.NewChainConfigProvider([]conf.ConfigProvider{simCp, prodCp, secretsCp})
 
-//var repository = persistence.NewInMemoryRepository()
+// var repository = persistence.NewInMemoryRepository()
 var repository, postgresRepositoryErr = persistence.NewPostgresRepository(
 	config.GetString("postgres.host"),
 	config.GetString("postgres.port"),

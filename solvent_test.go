@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"testing"
+	"time"
 
 	. "github.com/eldelto/solvent/internal/testutils"
 	"github.com/google/uuid"
@@ -29,6 +30,7 @@ func TestNewToDoList(t *testing.T) {
 func TestRename(t *testing.T) {
 	list, _ := newToDoList(listTitle0)
 	oldTs := list.Title.UpdatedAt
+	time.Sleep(1 * time.Millisecond)
 
 	id, err := list.Rename(listTitle1)
 	AssertEquals(t, nil, err, "list.Rename error")
