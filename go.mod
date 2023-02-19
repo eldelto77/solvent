@@ -1,8 +1,9 @@
 module github.com/eldelto/solvent
 
-go 1.14
+go 1.19
 
 require (
+<<<<<<< HEAD
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -35,4 +36,23 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+=======
+	github.com/google/uuid v1.3.0
+	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/mux v1.7.4
+	github.com/jackc/pgx/v4 v4.6.0
+>>>>>>> d097348b9e37837e01f22ba0199811516b83798a
+)
+
+require (
+	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/pgconn v1.5.0 // indirect
+	github.com/jackc/pgio v1.0.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.0.1 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20200307190119-3430c5407db8 // indirect
+	github.com/jackc/pgtype v1.3.0 // indirect
+	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59 // indirect
+	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7 // indirect
 )
