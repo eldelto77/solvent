@@ -3,6 +3,8 @@
 
 A minimalistic CRDT-based To-Do list.
 
+**The rewrite of this project can be found [here](https://github.com/eldelto/core/tree/main/cmd/solvent)**
+
 - [Solvent](#solvent)
   - [Introduction](#introduction)
     - [Adding / Removing](#adding--removing)
